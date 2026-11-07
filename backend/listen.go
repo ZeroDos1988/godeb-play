@@ -122,7 +122,7 @@ func listen(spec listenSpec) (net.Listener, error) {
 }
 
 func serve(srv *http.Server, ln net.Listener) {
-	slog.Info("GoDeb lauscht", "adresse", ln.Addr().String())
+	slog.Info("GoDeb Play lauscht", "adresse", ln.Addr().String())
 	if err := srv.Serve(ln); err != nil && !errors.Is(err, http.ErrServerClosed) {
 		slog.Error("HTTP-Server beendet", "adresse", ln.Addr().String(), "fehler", err)
 	}

@@ -102,7 +102,7 @@ func (t *tlsListeners) open(addr, kind string) {
 	case "remote":
 		slog.Warn("Fernzugang offen", "url", "https://"+addr, "bis", remoteaccess.Load().Until.Local().Format(time.DateTime), "zertifikat_sha256", fp)
 	default:
-		slog.Info("GoDeb lauscht im Heimnetz", "url", "https://"+addr)
+		slog.Info("GoDeb Play lauscht im Heimnetz", "url", "https://"+addr)
 	}
 }
 

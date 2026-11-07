@@ -86,7 +86,7 @@ func main() {
 	ctx, stop := signal.NotifyContext(context.Background(), syscall.SIGINT, syscall.SIGTERM)
 	defer stop()
 
-	slog.Info("GoDeb startet", "version", version, "root", root, "auth", auth.Dir(), "db", db.Path(), "log_level", os.Getenv("GODEB_LOG_LEVEL"))
+	slog.Info("GoDeb Play startet", "version", version, "root", root, "auth", auth.Dir(), "db", db.Path(), "log_level", os.Getenv("GODEB_LOG_LEVEL"))
 	if err := serveAll(ctx, srv, specs); err != nil {
 		log.Fatal(err)
 	}

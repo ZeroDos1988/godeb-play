@@ -11,7 +11,15 @@ Spieler --> VPS (GoDeb-Hub, öffentliche IP) --DNAT/SNAT--> WireGuard --> GoDeb 
                                                                           + Spielserver
 ```
 
-> **Stand:** Gerüst. Einrichtung, Login mit 2FA, Agent und Beitritt zum Hub funktionieren; Spielserver (SteamCMD, Enshrouded) folgen. Siehe [ROADMAP.md](ROADMAP.md).
+> **Stand (07.11.2026):** Vorabversion, noch nicht auf echter Hardware getestet. Einrichtung, Login mit 2FA, Agent, Beitritt zum Hub und Enshrouded (SteamCMD unter Wine) mit Savegame-Backups sind umgesetzt. Siehe [ROADMAP.md](ROADMAP.md).
+
+## Spielserver
+
+- **Ein Klick zum Server:** SteamCMD, Serverdateien, Wine für Windows-Server, Vorgabe-Konfiguration mit Formular, systemd-Unit, Firewall. Enshrouded ist das erste Spiel; weitere brauchen nur eine Beschreibung im Code.
+- **Jedes Spiel eigenes Konto und Sandbox**, nie root. Der root-Agent greift auf Spielverzeichnisse nur über `os.Root` zu, damit ein übernommener Spielserver ihn nicht per Symlink nach draußen lenken kann.
+- **Savegames gesichert** vor jedem Update, auf Knopfdruck und vor jeder Wiederherstellung; Wiederherstellen mit einem Klick.
+- **Spielerzahlen** per Steam-Query, sichtbar hier und auf dem GoDeb-Hub.
+- **Ports nur im Tunnel:** Öffentlich werden sie über die Portweiterleitung des Hubs in GoDeb; die Seite nennt genau, was dort einzutragen ist.
 
 ## Was es mit GoDeb teilt
 
@@ -21,13 +29,13 @@ Der Unterbau ist aus GoDeb kopiert (Stand GoDeb `24f6000`, 07.11.2026) und soll 
 - **Ersteinrichtung im Browser** mit Einmal-Token, erster Administrator, TOTP-2FA mit Backup-Codes.
 - **Nur über Tunnel, Heimnetz (HTTPS) oder lokal** erreichbar, nie Klartext-HTTP auf LAN oder WAN.
 - **Beitritt per Beitrittscode** (`godeb-join:…`) mit derselben strengen Prüfung der Client-Datei wie in GoDeb.
-- Plugins für Dienste (inkl. Server-Neustart), Firewall (ufw), Updates (APT), Protokoll und WireGuard.
+- Plugins für Dienste (inkl. Server-Neustart), Firewall (ufw), Updates (APT), Protokoll, Überwachung und WireGuard (nur der Tunnel zum Hub).
 
 GoDeb Play hat eigene Namen, damit es nie mit GoDeb kollidiert: Programm `godeb-play`, Dienste `godeb-play.service` und `godeb-play-agent.service`, Benutzer `godeb-play`, Daten in `/etc/godeb-play` und `/var/lib/godeb-play`.
 
 ## Installation (zum Testen)
 
-Noch kein APT-Repo. Paket bauen und im Container installieren:
+Noch kein APT-Repo. Paket bauen und im Container installieren (Befehle für einen Proxmox-Container in [DOCUMENTATION.md](DOCUMENTATION.md#container-unter-proxmox-vorschlag-noch-nicht-auf-echter-hardware-geprüft)):
 
 ```sh
 scripts/build-deb.sh

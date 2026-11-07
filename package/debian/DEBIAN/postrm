@@ -10,6 +10,10 @@ fi
 
 if [ "$1" = "remove" ] || [ "$1" = "purge" ]; then
 	rm -f /etc/fail2ban/jail.d/godeb-play.local /etc/fail2ban/jail.d/godeb-play-sshd.local /etc/fail2ban/filter.d/godeb-play.conf
+	# Traffic counters of the monitor (counters only, no rules that filter).
+	if command -v nft >/dev/null 2>&1; then
+		nft delete table inet godeb_acct >/dev/null 2>&1 || true
+	fi
 	if command -v systemctl >/dev/null 2>&1; then
 		systemctl try-restart fail2ban.service >/dev/null 2>&1 || true
 	fi

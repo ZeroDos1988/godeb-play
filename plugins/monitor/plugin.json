@@ -1,0 +1,6 @@
+{
+  "id": "monitor",
+  "name": "Überwachung",
+  "apt_dependencies": [],
+  "systemd_services": []
+}

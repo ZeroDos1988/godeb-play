@@ -104,6 +104,12 @@ func stepUpFor(method, raw string) stepUpLevel {
 	if strings.HasPrefix(p, "/api/plugins/domains/") && strings.HasSuffix(p, "/apply") {
 		return stepUpFresh
 	}
+	// Game servers: install and update download and run code from Steam
+	// and install packages; a restore overwrites the world.
+	if strings.HasPrefix(p, "/api/plugins/steam/games/") &&
+		(strings.HasSuffix(p, "/install") || strings.HasSuffix(p, "/update") || strings.HasSuffix(p, "/restore")) {
+		return stepUpFresh
+	}
 	for _, prefix := range criticalPrefixes {
 		if p == strings.TrimSuffix(prefix, "/") || strings.HasPrefix(p, prefix) {
 			return stepUpFresh

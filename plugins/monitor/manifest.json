@@ -1,0 +1,8 @@
+{
+  "id": "monitor",
+  "name": "Überwachung",
+  "description": "Zustand, Verlauf, Traffic, Zugriffe und Spielserver auf einen Blick",
+  "icon": "pulse",
+  "group": "system",
+  "order": 5
+}

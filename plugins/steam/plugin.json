@@ -1,0 +1,7 @@
+{
+  "id": "steam",
+  "name": "Spielserver (Steam)",
+  "apt_dependencies": ["lib32gcc-s1", "ca-certificates"],
+  "systemd_services": [],
+  "architectures": ["amd64"]
+}

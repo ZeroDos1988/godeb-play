@@ -12,7 +12,6 @@ import (
 	"godebplay/backend/auth"
 	"godebplay/backend/core"
 	"godebplay/backend/pluginmgr"
-	"godebplay/plugins/wireguard"
 )
 
 // mountAgentInternal registers the routes only the web process calls on
@@ -31,46 +30,6 @@ func mountAgentInternal(mux *http.ServeMux) {
 		}
 		core.WriteJSON(w, http.StatusOK, map[string]any{"disabled": ids})
 	})
-	mux.HandleFunc("GET /internal/trust/config", func(w http.ResponseWriter, r *http.Request) {
-		cfg, err := wireguard.TrustSettings()
-		if err != nil {
-			core.WriteError(w, http.StatusInternalServerError, err.Error())
-			return
-		}
-		core.WriteJSON(w, http.StatusOK, cfg)
-	})
-	mux.HandleFunc("POST /internal/trust/sign", func(w http.ResponseWriter, r *http.Request) {
-		var req struct {
-			Nonce string `json:"nonce"`
-		}
-		if !core.DecodeJSON(w, r, &req) {
-			return
-		}
-		sig, err := wireguard.TrustSign(req.Nonce)
-		if err != nil {
-			core.WriteError(w, http.StatusBadRequest, err.Error())
-			return
-		}
-		core.WriteJSON(w, http.StatusOK, map[string]string{"sig": sig})
-	})
-}
-
-// agentTrust is the web process's view of the trusted endpoint: config and
-// signatures come from the agent, the key stays root-only.
-type agentTrust struct{ c *agent.Client }
-
-func (a agentTrust) Config(ctx context.Context) (wireguard.TrustConfig, error) {
-	var cfg wireguard.TrustConfig
-	err := a.c.Call(ctx, http.MethodGet, "/internal/trust/config", nil, &cfg)
-	return cfg, err
-}
-
-func (a agentTrust) Sign(ctx context.Context, nonce string) (string, error) {
-	var resp struct {
-		Sig string `json:"sig"`
-	}
-	err := a.c.Call(ctx, http.MethodPost, "/internal/trust/sign", map[string]string{"nonce": nonce}, &resp)
-	return resp.Sig, err
 }
 
 // useAgentState points the web process at the agent for data it may not

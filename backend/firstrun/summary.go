@@ -65,7 +65,6 @@ type Summary struct {
 	URLs        []Link         `json:"urls"`
 	Tunnel      *TunnelSummary `json:"tunnel,omitempty"`
 	LANCert     string         `json:"lanCert,omitempty"` // SHA-256 fingerprint of the LAN HTTPS certificate
-	Trust       string         `json:"trust,omitempty"`   // trusted endpoint URL
 	SSHPorts    []int          `json:"sshPorts"`
 	Firewall    string         `json:"firewall"` // active, inactive, missing
 	Rules       []string       `json:"rules"`
@@ -125,9 +124,6 @@ func BuildSummary(ctx context.Context) Summary {
 	sshCmd := "ssh" + sshPort + " -L 8080:127.0.0.1:8080 root@" + sshHost
 	s.URLs = append(s.URLs, Link{Kind: "ssh", Label: "Notzugang über SSH", URL: "http://127.0.0.1:8080", Note: "Vorher: " + sshCmd, Command: sshCmd})
 
-	if t := wireguard.LocalTrust(); t.Enabled {
-		s.Trust = t.URL
-	}
 	switch st := core.RunAdmin(ctx, "ufw", "status"); {
 	case st.Err != nil:
 	case strings.Contains(st.Stdout, "Status: active"):
@@ -253,9 +249,6 @@ func WriteSummary(w io.Writer, s Summary) {
 		if len(t.Clients) > 0 {
 			fmt.Fprintf(w, "  Clients:        %s\n", strings.Join(t.Clients, ", "))
 		}
-	}
-	if s.Trust != "" {
-		fmt.Fprintf(w, "  Trusted Endpoint: %s\n", s.Trust)
 	}
 	ports := make([]string, len(s.SSHPorts))
 	for i, p := range s.SSHPorts {

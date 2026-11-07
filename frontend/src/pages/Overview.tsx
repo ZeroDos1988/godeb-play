@@ -22,18 +22,16 @@ type DoctorReport = {
   warns: number;
 };
 type Upgrades = { packages: unknown[]; security: number; settings?: { autoSecurity?: boolean } };
-type Jails = { jails?: { name: string; currentlyBanned: number; totalBanned: number }[] };
+type Games = { games?: { id: string; name: string; ready: boolean; service: string }[] };
 type Services = {
   server?: { uptime: number; load: number[]; cpus: number };
   services: { unit: string; key: string; name: string; active: string; locked?: boolean }[];
 };
 type Peers = { peers?: { live?: boolean }[]; interface?: { up?: boolean } };
-type Certs = { certificates?: { name: string; notAfter: string }[] };
 
 // The overview refreshes itself; doctor and the plugin cards only when the
 // page opens or on demand.
 const REFRESH_MS = 10_000;
-const CERT_WARN_DAYS = 21;
 
 const dot: Record<Level, string> = {
   ok: "bg-emerald-500",
@@ -45,19 +43,18 @@ const rank: Level[] = ["ok", "info", "warning", "critical"];
 const worst = (...levels: Level[]) => rank[Math.max(...levels.map((l) => rank.indexOf(l)))];
 
 // Overview is the dashboard: one line whether the server needs anything,
-// then one tile per area that matters (load, updates, bans, tunnel,
-// services, certificates, game servers). A tile only shows when its
+// then one tile per area that matters (load, updates, game servers,
+// tunnel, services). A tile only shows when its
 // plugin is switched on.
 export function Overview() {
-  const { t, i18n } = useTranslation();
+  const { t } = useTranslation();
   const system = useGet<SystemInfo>("/api/system");
   const health = useGet<Health>("/api/plugins/monitor/summary");
   const doctor = useGet<DoctorReport>("/api/doctor");
   const apt = useGet<Upgrades>("/api/plugins/apt/upgradable");
-  const bans = useGet<Jails>("/api/plugins/fail2ban/status");
+  const games = useGet<Games>("/api/plugins/steam/games");
   const services = useGet<Services>("/api/plugins/systemd/overview");
   const peers = useGet<Peers>("/api/plugins/wireguard/peers");
-  const certs = useGet<Certs>("/api/plugins/certbot/certificates");
   // Findings only link to pages of plugins that are switched on.
   const enabled = new Set((useGet<{ plugins: PluginMeta[] }>("/api/plugins").data?.plugins ?? []).map((p) => p.id));
   const pageLink = (page?: string) => (page && enabled.has(page) ? `#/${page}` : undefined);
@@ -95,15 +92,11 @@ export function Overview() {
   );
 
   const pending = apt.data?.packages.length ?? 0;
-  const banned = (bans.data?.jails ?? []).reduce((sum, j) => sum + j.currentlyBanned, 0);
+  const gameList = (games.data?.games ?? []).filter((g) => g.ready);
+  const gamesUp = gameList.filter((g) => g.service === "active").length;
   const svc = services.data?.services ?? [];
   const stopped = svc.filter((s) => s.active !== "active");
   const peerList = peers.data?.peers ?? [];
-  const certList = (certs.data?.certificates ?? [])
-    .map((c) => ({ ...c, days: daysUntil(c.notAfter) }))
-    .sort((a, b) => a.days - b.days);
-  const expiring = certList.filter((c) => c.days < CERT_WARN_DAYS);
-  const expired = certList.filter((c) => c.days < 0);
 
   return (
     <section>
@@ -222,22 +215,26 @@ export function Overview() {
           </Tile>
         ) : null}
 
-        {bans.data ? (
+        {games.data ? (
           <Tile
-            icon="lock"
-            title="Fail2ban"
-            href="#/fail2ban"
-            value={banned === 0 ? t("overview.noneBlocked") : t("overview.blockedCount", { count: banned })}
-            tone={banned > 0 ? "info" : "ok"}
+            icon="game"
+            title={t("overview.games")}
+            href="#/steam"
+            value={gameList.length === 0 ? t("overview.gamesNone") : t("overview.gamesLine", { running: gamesUp, total: gameList.length })}
+            tone={gameList.length > 0 && gamesUp < gameList.length ? "warning" : "ok"}
           >
-            <ul className="space-y-1 text-sm">
-              {(bans.data.jails ?? []).map((j) => (
-                <li key={j.name} className="flex justify-between gap-3">
-                  <span className="font-mono text-white/80">{j.name}</span>
-                  <span className="text-white/60">{t("overview.jailLine", { now: j.currentlyBanned, total: j.totalBanned })}</span>
-                </li>
-              ))}
-            </ul>
+            {gameList.length > 0 ? (
+              <ul className="space-y-1 text-sm">
+                {gameList.map((g) => (
+                  <li key={g.id} className="flex justify-between gap-3">
+                    <span>{g.name}</span>
+                    <span className={g.service === "active" ? "text-emerald-300" : "text-amber-200"}>{g.service}</span>
+                  </li>
+                ))}
+              </ul>
+            ) : (
+              <p className="text-sm text-white/60">{t("overview.gamesHint")}</p>
+            )}
           </Tile>
         ) : null}
 
@@ -273,29 +270,6 @@ export function Overview() {
                 ))}
               </ul>
             ) : null}
-          </Tile>
-        ) : null}
-
-        {certList.length > 0 ? (
-          <Tile
-            icon="certificate"
-            title={t("overview.certs")}
-            href="#/certbot"
-            value={
-              expired.length > 0
-                ? t("overview.certsExpired", { count: expired.length })
-                : expiring.length > 0
-                  ? t("overview.certsExpiring", { count: expiring.length })
-                  : t("overview.certsOk", { count: certList.length })
-            }
-            tone={expiring.some((c) => c.days < 7) ? "critical" : expiring.length > 0 ? "warning" : "ok"}
-          >
-            <p className="text-sm text-white/60">
-              {t("overview.certNext", {
-                name: certList[0].name,
-                date: new Date(certList[0].notAfter).toLocaleDateString(i18n.language),
-              })}
-            </p>
           </Tile>
         ) : null}
 
@@ -443,11 +417,6 @@ function Issue({
 
 function percent(used: number, total: number) {
   return total ? (used / total) * 100 : 0;
-}
-
-function daysUntil(date: string) {
-  const ms = new Date(date).getTime() - Date.now();
-  return Number.isNaN(ms) ? Infinity : Math.floor(ms / 86_400_000);
 }
 
 function uptime(seconds: number, t: (key: string, opts?: Record<string, unknown>) => string) {

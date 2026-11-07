@@ -138,8 +138,8 @@ func (s *setup) runNone(ctx context.Context) error {
 // runPeer sets up a host behind a GoDeb hub (the home VM): admin, wg0 from
 // the hub's client file, firewall. Clients are created on the hub.
 func (s *setup) runPeer(ctx context.Context) error {
-	s.steps = 4
-	fmt.Fprintln(s.out, "GoDeb Ersteinrichtung als Peer eines Hubs: Administrator, Tunnel zum Hub, Firewall, Trusted Endpoint.")
+	s.steps = 3
+	fmt.Fprintln(s.out, "GoDeb Play Ersteinrichtung als Standort eines GoDeb-Hubs: Administrator, Tunnel zum Hub, Firewall.")
 	fmt.Fprintln(s.out, "Danach ist die Web-UI nur über den Tunnel und lokal erreichbar.")
 
 	s.step(1, "Administrator")
@@ -152,16 +152,13 @@ func (s *setup) runPeer(ctx context.Context) error {
 		return err
 	}
 
-	s.step(3, "Trusted Endpoint im Heimnetz")
-	s.trust(ctx)
-
-	s.step(4, "Firewall und Erreichbarkeit")
+	s.step(3, "Firewall und Erreichbarkeit")
 	if err := s.firewall(ctx, firstrun.AccessLAN); err != nil {
 		return err
 	}
 
 	fmt.Fprintf(s.out, "\nFertig. Web-UI dieses Servers: http://%s:%d\n", s.peer.Address, s.opt.UIPort)
-	fmt.Fprintln(s.out, "Vom Handy aus über den Hub erreichbar, wenn der Peer dort als Standort angelegt ist (godeb site add).")
+	fmt.Fprintln(s.out, "Vom Handy aus über den Hub erreichbar, wenn dieser Server dort als Standort angelegt ist (godeb site add).")
 	return nil
 }
 
@@ -234,27 +231,6 @@ func (s *setup) joinInput() (string, error) {
 	}
 	content, err := os.ReadFile(s.opt.Join)
 	return string(content), err
-}
-
-// trust offers the signed trusted endpoint on the LAN address, so the GoDeb
-// WireGuard app switches the tunnel off at home. Same function as the UI.
-func (s *setup) trust(ctx context.Context) {
-	if info := wireguard.LocalTrust(); info.Enabled {
-		fmt.Fprintf(s.out, "  Läuft bereits: %s\n", info.URL)
-		return
-	}
-	lan := detectHost()
-	if lan == "" {
-		fmt.Fprintln(s.out, "  Keine LAN-Adresse erkannt. Später: godeb-play trust enable --address <lan-ip>")
-		return
-	}
-	if !s.confirm(fmt.Sprintf("Trusted Endpoint auf %s:8787 anbieten (Handy schaltet den Tunnel im Heim-WLAN ab)?", lan)) {
-		fmt.Fprintln(s.out, "  Übersprungen. Später: godeb-play trust enable")
-		return
-	}
-	if err := enableTrust(ctx, lan, 8787, s.out); err != nil {
-		fmt.Fprintf(s.out, "  Nicht eingerichtet: %v\n", err)
-	}
 }
 
 func (s *setup) admin() error {

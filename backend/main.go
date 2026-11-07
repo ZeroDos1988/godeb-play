@@ -21,7 +21,6 @@ import (
 	"godebplay/backend/firstrun"
 	"godebplay/backend/logging"
 	"godebplay/backend/pluginmgr"
-	"godebplay/plugins/wireguard"
 )
 
 // Plugin packages register themselves from init() via core.Register.
@@ -95,11 +94,6 @@ func main() {
 		// Without an agent this process runs the plugins and their services.
 		core.Default.StartServices(ctx)
 	}
-	trustSrc := wireguard.LocalTrustSource()
-	if sock := agent.SocketPath(); sock != "" {
-		trustSrc = agentTrust{agent.NewClient(sock)}
-	}
-	go wireguard.WatchTrust(ctx, trustSrc)
 
 	<-ctx.Done()
 	shutdownCtx, cancel := context.WithTimeout(context.Background(), 5*time.Second)

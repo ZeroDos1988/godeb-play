@@ -65,15 +65,12 @@
   },
   "overview": {
     "title": "Aperçu",
-    "loading": "Chargement des données de l'hôte …",
     "unreachable": "Démon injoignable. {{error}}",
     "kernel": "Noyau",
     "sample": "Une partie des données est une valeur d'exemple Debian.",
     "cpu": "CPU",
     "ram": "RAM",
     "disk": "Disque",
-    "blockedCount": "{{count}} bloquées",
-    "noneBlocked": "Aucun blocage",
     "tunnelUp": "Tunnel actif",
     "tunnelDown": "Tunnel inactif",
     "allGood": "Tout va bien",
@@ -90,21 +87,12 @@
     "securityPending_other": "dont {{count}} de sécurité",
     "autoSecurityOn": "Les mises à jour de sécurité s'installent automatiquement.",
     "autoSecurityOff": "Mises à jour de sécurité manuelles.",
-    "jailLine": "{{now}} bannies · {{total}} au total",
     "tunnel": "Tunnel",
     "peersLine": "{{live}} sur {{total}} appareils connectés",
     "services": "Services",
     "servicesLine": "{{running}} sur {{total}} actifs",
-    "certs": "Certificats",
-    "certsExpiring_one": "{{count}} expire bientôt",
-    "certsExpiring_other": "{{count}} expirent bientôt",
-    "certsOk_one": "{{count}} valide",
-    "certsOk_other": "{{count}} valides",
-    "certNext": "Prochain : {{name}} jusqu'au {{date}}",
     "uptimeDays": "{{days}} j {{hours}} h",
-    "uptimeHours": "{{hours}} h",
-    "certsExpired_one": "{{count}} expiré",
-    "certsExpired_other": "{{count}} expirés"
+    "uptimeHours": "{{hours}} h"
   },
   "panel": {
     "mocked": "Données d’exemple : le programme ou le fichier nécessaire manque sur ce serveur.",
@@ -116,23 +104,6 @@
     "notReady": "Le dossier existe, mais le gestionnaire Go n'est pas enregistré.",
     "noView": "La vue React manque encore."
   },
-  "fail2ban": {
-    "title": "Fail2ban",
-    "description": "Adresses bannies après trop d’échecs (connexion, SSH, mail).",
-    "none": "Aucune jail active.",
-    "blockedTitle": "Adresses IP bloquées",
-    "noneBlocked": "Aucune IP n'est bloquée pour le moment.",
-    "unban": "Débloquer",
-    "unbanning": "Déblocage …",
-    "unbanned": "{{ip}} débloquée.",
-    "unbanFailed": "Échec du déblocage",
-    "jail": "Jail",
-    "failedNow": "Échecs actuels",
-    "failedTotal": "Échecs au total",
-    "bannedNow": "Bloquées maintenant",
-    "bannedTotal": "Bloquées au total",
-    "ip": "Adresse IP"
-  },
   "apt": {
     "title": "APT",
     "description": "Paquets signalés comme mettables à jour par apt list --upgradable.",
@@ -142,16 +113,6 @@
     "installed": "Installé",
     "available": "Disponible",
     "arch": "Arch"
-  },
-  "certbot": {
-    "title": "Certbot",
-    "description": "Certificats Let’s Encrypt de ce serveur et leur date d’expiration.",
-    "empty": "Aucun certificat dans /etc/letsencrypt/live.",
-    "name": "Nom",
-    "subject": "Subject",
-    "from": "Valide à partir du",
-    "until": "Valide jusqu'au",
-    "path": "Chemin"
   },
   "systemd": {
     "title": "Systemd",
@@ -185,53 +146,13 @@
   },
   "wg": {
     "title": "WireGuard",
-    "description": "Tunnel et appareils. Les nouveaux appareils reçoivent un code QR ou un fichier.",
     "status": "État",
-    "up": "{{name}} actif",
-    "down": "{{name}} inactif",
     "address": "Adresse",
-    "listen": "ListenPort",
-    "dns": "DNS",
     "publicKey": "PublicKey",
     "file": "Fichier",
-    "none": "Aucun pair.",
-    "name": "Nom",
-    "ip": "IP",
-    "endpoint": "Endpoint",
     "handshake": "Handshake",
-    "transfer": "Transfert",
-    "liveOnly": "en direct seulement",
-    "notLive": "pas en direct",
-    "noClient": "Pas de fichier client",
-    "mail": "Envoyer par e-mail",
-    "new": "Nouveau pair",
     "allowed": "AllowedIPs (client)",
-    "addressOptional": "Adresse (facultative)",
-    "auto": "automatique",
-    "create": "Créer le pair",
-    "creating": "Génération des clés …",
-    "needConfig": "Sans wg0.conf lisible, aucun pair ne peut être créé.",
-    "createFailed": "Le pair n'a pas pu être créé",
-    "createdLive": "Pair {{name}} créé et appliqué en direct.",
-    "created": "Pair {{name}} créé. {{detail}}",
-    "downloadFailed": "Échec du téléchargement",
-    "qr": "Code QR · {{name}}",
-    "qrAlt": "Configuration WireGuard {{name}}",
-    "qrLoading": "Génération du code QR …",
-    "qrHint": "Scannez-le dans l'application WireGuard.",
-    "qrFailed": "Code QR indisponible",
-    "emailTitle": "Envoyer par e-mail · {{name}}",
-    "recipient": "Destinataire",
-    "emailHint": "Le fichier contient une clé privée.",
-    "send": "Envoyer",
-    "sending": "Envoi …",
-    "sent": "Configuration {{name}}.conf envoyée à {{to}}.",
-    "mailFailed": "Échec de l'envoi",
-    "never": "jamais",
-    "excluded": "Excluded IPs",
-    "excludedPlaceholder": "e.g. 172.16.1.0/24",
-    "excludedHint": "Networks subtracted from AllowedIPs before writing the client config.",
-    "peers": "Appareils et sites"
+    "never": "jamais"
   },
   "enroll": {
     "title": "Configurer l'authentification à deux facteurs",
@@ -251,68 +172,11 @@
     "failed": "Échec de la configuration",
     "badCode": "Code invalide"
   },
-  "mailgw": {
-    "title": "Passerelle mail",
-    "description": "Postfix met en file le courrier entrant et sortant et le transmet au serveur domestique via le tunnel WireGuard.",
-    "tunnel": "Lien WireGuard",
-    "tunnelLocal": "Tunnel 10.8.0.0/24 local",
-    "tunnelMissing": "Pas d'interface de tunnel",
-    "relayHint": "Prochain saut {{host}}:25. Sans joignabilité, le courrier reste en file.",
-    "mode": {
-      "relay": "relaie",
-      "buffer": "en file",
-      "idle": "non configuré"
-    },
-    "domain": "Domaine relais",
-    "relay": "Serveur domestique",
-    "selector": "Sélecteur DKIM",
-    "apply": "Configurer le relais",
-    "applying": "Écriture de Postfix …",
-    "applied": "Le relais pour {{domain}} est en place.",
-    "setupFailed": "La configuration a échoué",
-    "health": "Anti-listes noires",
-    "noDomain": "Pas encore de domaine. Le contrôle DNS démarre après la configuration.",
-    "check": {
-      "ptr": "PTR",
-      "spf": "SPF",
-      "dkim": "DKIM",
-      "dmarc": "DMARC"
-    },
-    "queue": "File · {{count}}",
-    "flush": "Livrer maintenant",
-    "flushing": "Livraison …",
-    "flushed": "La file a été relancée.",
-    "flushFailed": "La livraison a échoué",
-    "empty": "Aucun message dans la file.",
-    "sender": "Expéditeur",
-    "recipient": "Destinataire",
-    "time": "Heure",
-    "status": "État",
-    "reason": "Raison"
-  },
-  "cron": {
-    "description": "Tâches planifiées de ce serveur. Les nouvelles tâches tournent comme minuteurs systemd, uniquement avec des commandes autorisées.",
-    "last": "Dernière exécution"
-  },
   "monitor": {
     "description": "État du serveur, historique et événements."
   },
-  "mail": {
-    "description": "Serveur mail avec domaines, boîtes, redirections et filtre anti-spam."
-  },
-  "postgres": {
-    "description": "Bases de données et utilisateurs. Accessibles uniquement depuis ce serveur, jamais publics."
-  },
   "logs": {
     "description": "Connexions, actions et erreurs de GoDeb."
-  },
-  "websites": {
-    "description": "Vos sites web et proxys vers des services internes, avec certificat Let’s Encrypt.",
-    "sites": "Sites"
-  },
-  "pf": {
-    "description": "Rediriger des ports publics de ce serveur vers un site, p. ex. le serveur de jeu de la VM à la maison.",
-    "rules": "Redirections"
   },
   "pluginManager": {
     "lead": "Activer et désactiver les plugins. Un plugin désactivé disparaît du menu ; les services derrière (p. ex. WireGuard ou le pare-feu) continuent de tourner."

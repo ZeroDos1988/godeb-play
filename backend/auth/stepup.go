@@ -65,9 +65,6 @@ var criticalExact = map[string]bool{
 var noStepUp = map[string]bool{
 	"/api/user/settings":       true, // theme and language of the own account only
 	"/api/plugin-manager/scan": true, // re-reads plugin.json files, changes nothing
-	// Closing the temporary remote access only takes access away; it must
-	// work in one click from the overview, also when no code is at hand.
-	"/api/plugins/ufw/remote/close": true,
 	// Cancelling a scheduled reboot only stops one; the minute until the
 	// reboot is too short to look up a code.
 	"/api/plugins/systemd/reboot/cancel": true,

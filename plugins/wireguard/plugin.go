@@ -12,24 +12,12 @@ func init() {
 
 const configPath = "/etc/wireguard/wg0.conf"
 
-// Mount registers the WireGuard route.
+// Mount registers the WireGuard routes. GoDeb Play is always a site of a
+// GoDeb hub (or runs without WireGuard): status, the hub peer, joining.
 func Mount(mux *http.ServeMux) {
 	mux.HandleFunc("GET /api/plugins/wireguard/status", handleStatus)
 	mux.HandleFunc("GET /api/plugins/wireguard/peers", handlePeers)
-	mux.HandleFunc("POST /api/plugins/wireguard/peers", handleCreate)
-	mux.HandleFunc("GET /api/plugins/wireguard/peers/{id}/config", handleClientConfig)
-	mux.HandleFunc("POST /api/plugins/wireguard/peers/{id}/delete-config", handleDeleteClientConfig)
-	mux.HandleFunc("GET /api/plugins/wireguard/peers/{id}/qr", handleQR)
-	mux.HandleFunc("GET /api/plugins/wireguard/peers/{id}/code", handleJoinCode)
-	mux.HandleFunc("POST /api/plugins/wireguard/peers/{id}/send-email", handleSendEmail)
 	mux.HandleFunc("POST /api/plugins/wireguard/join", handleJoin)
-	mux.HandleFunc("GET /api/plugins/wireguard/trust", handleTrustStatus)
-	mux.HandleFunc("POST /api/plugins/wireguard/trust", handleTrustSet)
-	mux.HandleFunc("POST /api/plugins/wireguard/trust/sync", handleTrustSync)
-	mux.HandleFunc("GET /api/plugins/wireguard/trust/info", handleTrustInfo)
-	mux.HandleFunc("GET /api/plugins/wireguard/volltunnel", handleVolltunnelGet)
-	mux.HandleFunc("POST /api/plugins/wireguard/volltunnel", handleVolltunnelSet)
-	mountAndroid(mux)
 }
 
 type response struct {
@@ -61,3 +49,6 @@ func handleStatus(w http.ResponseWriter, r *http.Request) {
 	resp.Peers = cfg.Peers
 	core.WriteJSON(w, http.StatusOK, resp)
 }
+
+// ConfigPath is the wg-quick file of the tunnel to the hub.
+func ConfigPath() string { return configPath }

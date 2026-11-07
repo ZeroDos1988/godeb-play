@@ -65,15 +65,12 @@
   },
   "overview": {
     "title": "概览",
-    "loading": "正在加载主机数据 …",
     "unreachable": "守护进程不可达。{{error}}",
     "kernel": "内核",
     "sample": "部分主机数据是 Debian 示例值。",
     "cpu": "CPU",
     "ram": "内存",
     "disk": "磁盘",
-    "blockedCount": "{{count}} 个已封禁",
-    "noneBlocked": "没有封禁",
     "tunnelUp": "隧道已连接",
     "tunnelDown": "隧道未连接",
     "allGood": "一切正常",
@@ -90,21 +87,12 @@
     "securityPending_other": "其中 {{count}} 个安全更新",
     "autoSecurityOn": "安全更新自动安装。",
     "autoSecurityOff": "安全更新需手动安装。",
-    "jailLine": "当前封禁 {{now}} · 共 {{total}}",
     "tunnel": "隧道",
     "peersLine": "{{total}} 台设备中 {{live}} 台已连接",
     "services": "服务",
     "servicesLine": "{{total}} 个中 {{running}} 个运行中",
-    "certs": "证书",
-    "certsExpiring_one": "{{count}} 个即将过期",
-    "certsExpiring_other": "{{count}} 个即将过期",
-    "certsOk_one": "{{count}} 个有效",
-    "certsOk_other": "{{count}} 个有效",
-    "certNext": "下一个：{{name}} 至 {{date}}",
     "uptimeDays": "{{days}} 天 {{hours}} 小时",
-    "uptimeHours": "{{hours}} 小时",
-    "certsExpired_one": "{{count}} 个已过期",
-    "certsExpired_other": "{{count}} 个已过期"
+    "uptimeHours": "{{hours}} 小时"
   },
   "panel": {
     "mocked": "示例数据：此服务器上缺少所需的程序或文件。",
@@ -116,23 +104,6 @@
     "notReady": "目录存在，但 Go 处理程序尚未注册。",
     "noView": "React 视图尚不存在。"
   },
-  "fail2ban": {
-    "title": "Fail2ban",
-    "description": "因失败次数过多而被封禁的地址（登录、SSH、邮件）。",
-    "none": "没有活动的 jail。",
-    "blockedTitle": "已封禁的 IP 地址",
-    "noneBlocked": "当前没有被封禁的 IP。",
-    "unban": "解除封禁",
-    "unbanning": "正在解除 …",
-    "unbanned": "已解除 {{ip}}。",
-    "unbanFailed": "解除封禁失败",
-    "jail": "Jail",
-    "failedNow": "当前失败",
-    "failedTotal": "失败总计",
-    "bannedNow": "当前封禁",
-    "bannedTotal": "封禁总计",
-    "ip": "IP 地址"
-  },
   "apt": {
     "title": "APT",
     "description": "apt list --upgradable 报告为可升级的软件包。",
@@ -142,16 +113,6 @@
     "installed": "已安装",
     "available": "可用版本",
     "arch": "架构"
-  },
-  "certbot": {
-    "title": "Certbot",
-    "description": "此服务器的 Let’s Encrypt 证书及其到期时间。",
-    "empty": "/etc/letsencrypt/live 中没有证书。",
-    "name": "名称",
-    "subject": "主题",
-    "from": "生效时间",
-    "until": "到期时间",
-    "path": "路径"
   },
   "systemd": {
     "title": "Systemd",
@@ -185,53 +146,13 @@
   },
   "wg": {
     "title": "WireGuard",
-    "description": "隧道和设备。新设备会获得二维码或配置文件。",
     "status": "状态",
-    "up": "{{name}} 已连接",
-    "down": "{{name}} 未连接",
     "address": "地址",
-    "listen": "监听端口",
-    "dns": "DNS",
     "publicKey": "公钥",
     "file": "文件",
-    "none": "没有对端。",
-    "name": "名称",
-    "ip": "IP",
-    "endpoint": "端点",
     "handshake": "握手",
-    "transfer": "流量",
-    "liveOnly": "仅运行中",
-    "notLive": "未运行",
-    "noClient": "没有客户端文件",
-    "mail": "通过邮件发送",
-    "new": "新建对端",
     "allowed": "AllowedIPs（客户端）",
-    "addressOptional": "地址（可选）",
-    "auto": "自动",
-    "create": "创建对端",
-    "creating": "正在生成密钥 …",
-    "needConfig": "没有可读的 wg0.conf 时无法创建对端。",
-    "createFailed": "无法创建对端",
-    "createdLive": "对端 {{name}} 已创建并即时生效。",
-    "created": "对端 {{name}} 已创建。{{detail}}",
-    "downloadFailed": "下载失败",
-    "qr": "二维码 · {{name}}",
-    "qrAlt": "WireGuard 配置 {{name}}",
-    "qrLoading": "正在生成二维码 …",
-    "qrHint": "在 WireGuard 应用中扫描。",
-    "qrFailed": "二维码不可用",
-    "emailTitle": "通过邮件发送 · {{name}}",
-    "recipient": "收件人",
-    "emailHint": "该文件包含私钥。",
-    "send": "发送",
-    "sending": "正在发送 …",
-    "sent": "配置 {{name}}.conf 已发送至 {{to}}。",
-    "mailFailed": "发送失败",
-    "never": "从未",
-    "excluded": "Excluded IPs",
-    "excludedPlaceholder": "e.g. 172.16.1.0/24",
-    "excludedHint": "Networks subtracted from AllowedIPs before writing the client config.",
-    "peers": "设备和站点"
+    "never": "从未"
   },
   "enroll": {
     "title": "设置双重验证",
@@ -251,68 +172,11 @@
     "failed": "设置失败",
     "badCode": "验证码无效"
   },
-  "mailgw": {
-    "title": "邮件网关",
-    "description": "Postfix 暂存进出邮件，并经由 WireGuard 隧道转发到家庭服务器。",
-    "tunnel": "WireGuard 绑定",
-    "tunnelLocal": "本地隧道 10.8.0.0/24",
-    "tunnelMissing": "没有隧道接口",
-    "relayHint": "下一跳 {{host}}:25。无法连通时邮件留在队列中。",
-    "mode": {
-      "relay": "正在转发",
-      "buffer": "正在暂存",
-      "idle": "尚未配置"
-    },
-    "domain": "中继域名",
-    "relay": "家庭服务器",
-    "selector": "DKIM 选择器",
-    "apply": "配置中继",
-    "applying": "正在写入 Postfix …",
-    "applied": "已为 {{domain}} 设置中继。",
-    "setupFailed": "配置失败",
-    "health": "反黑名单检查",
-    "noDomain": "还没有域名。配置完成后开始 DNS 检查。",
-    "check": {
-      "ptr": "PTR",
-      "spf": "SPF",
-      "dkim": "DKIM",
-      "dmarc": "DMARC"
-    },
-    "queue": "队列 · {{count}}",
-    "flush": "立即投递",
-    "flushing": "正在投递 …",
-    "flushed": "已请求队列立即投递。",
-    "flushFailed": "投递失败",
-    "empty": "队列中没有邮件。",
-    "sender": "发件人",
-    "recipient": "收件人",
-    "time": "时间",
-    "status": "状态",
-    "reason": "原因"
-  },
-  "cron": {
-    "description": "此服务器的计划任务。新任务以 systemd 定时器运行，只允许已批准的命令。",
-    "last": "上次运行"
-  },
   "monitor": {
     "description": "服务器状态、历史和事件。"
   },
-  "mail": {
-    "description": "包含域名、邮箱、转发和垃圾邮件过滤的邮件服务器。"
-  },
-  "postgres": {
-    "description": "数据库和用户。只能从本服务器访问，从不公开。"
-  },
   "logs": {
     "description": "GoDeb 的登录、操作和错误。"
-  },
-  "websites": {
-    "description": "自己的网站和到内部服务的反向代理，带 Let’s Encrypt 证书。",
-    "sites": "站点"
-  },
-  "pf": {
-    "description": "将此服务器的公共端口转发到某个站点，例如家里虚拟机上的游戏服务器。",
-    "rules": "转发规则"
   },
   "pluginManager": {
     "lead": "开启和关闭插件。关闭的插件会从菜单中消失；其背后的服务（例如 WireGuard 或防火墙）继续运行。"

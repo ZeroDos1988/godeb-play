@@ -14,25 +14,20 @@ import (
 )
 
 const usage = `Aufruf:
-  godeb                          Daemon starten (Weboberfläche)
-  godeb-play agent [--socket PFAD]    Root-Agent für Systemänderungen (godeb-play-agent.service)
-  godeb-play version                  Installierte Version
-  godeb-play setup-url                Link zur Ersteinrichtung im Browser (mit Einmal-Token)
-  godeb-play summary                  Übersicht: Adressen, Tunnel, Zugang, Firewall
-  godeb-play doctor                   Gesundheitscheck (nur lesend, Ausgabe ohne Geheimnisse zum Weitergeben)
-  godeb-play setup [--role hub|peer|none] [--access tunnel|lan|local]
-                                 Ersteinrichtung ohne Browser: Admin, Rolle, Firewall, Erreichbarkeit
-  godeb-play setup --join DATEI       Ersteinrichtung als Peer eines GoDeb-Hubs (Heim-VM hinter dem VPS)
-  godeb-play trust enable [--address IP] [--port 8787] | disable | show
-                                 Trusted Endpoint im Heimnetz (Auto-Disconnect der App)
-  godeb-play access open [--for 2h] | close | status
-                                 Fernzugang auf Zeit: HTTPS auf der öffentlichen IP (Port 8443),
-                                 schließt sich nach Ablauf von selbst (höchstens 24h)
+  godeb-play                             Daemon starten (Weboberfläche)
+  godeb-play agent [--socket PFAD]       Root-Agent für Systemänderungen (godeb-play-agent.service)
+  godeb-play version                     Installierte Version
+  godeb-play setup-url                   Link zur Ersteinrichtung im Browser (mit Einmal-Token)
+  godeb-play summary                     Übersicht: Adressen, Tunnel, Zugang, Firewall
+  godeb-play doctor                      Gesundheitscheck (nur lesend, Ausgabe ohne Geheimnisse zum Weitergeben)
+  godeb-play setup --join DATEI|-        Ersteinrichtung als Standort eines GoDeb-Hubs (Beitrittscode mit -)
+  godeb-play setup --role none           Ersteinrichtung ohne WireGuard (nur zum Ausprobieren im Heimnetz)
+                                         weitere Optionen: --access tunnel|lan|local, --admin, --yes
   godeb-play apt-run check|security|upgrade
-                                 Paketlisten prüfen, Sicherheitsupdates oder alle Updates installieren
-                                 (läuft sonst automatisch als godeb-play-apt.service)
-  godeb-play user passwd <benutzer>   Benutzer anlegen oder Passwort setzen
-  godeb-play 2fa reset <benutzer>     2FA zurücksetzen (Notfall, per SSH mit sudo)
+                                         Paketlisten prüfen, Sicherheitsupdates oder alle Updates installieren
+                                         (läuft sonst automatisch als godeb-play-apt.service)
+  godeb-play user passwd <benutzer>      Benutzer anlegen oder Passwort setzen
+  godeb-play 2fa reset <benutzer>        2FA zurücksetzen (Notfall, per SSH mit sudo)
   godeb-play sessions revoke <benutzer>  Alle Web-Sitzungen des Benutzers beenden
 `
 
@@ -51,10 +46,6 @@ func runCLI(args []string, stdin io.Reader, stdout, stderr io.Writer) int {
 		return runDoctor(stdout, stderr)
 	case len(args) >= 1 && args[0] == "setup":
 		return runSetup(args[1:], stdin, stdout, stderr)
-	case len(args) >= 1 && args[0] == "trust":
-		return runTrust(args[1:], stdout, stderr)
-	case len(args) >= 1 && args[0] == "access":
-		return runAccess(args[1:], stdout, stderr)
 	case len(args) >= 1 && args[0] == "apt-run":
 		return runAptRun(args[1:], stdout, stderr)
 	case len(args) == 3 && args[0] == "2fa" && args[1] == "reset":

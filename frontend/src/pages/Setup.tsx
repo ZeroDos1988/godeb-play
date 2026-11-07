@@ -254,9 +254,8 @@ function RoleStep({ info, role, setRole, onNext }: { info: SetupInfo; role: Role
 function AccessStep({ info, role, onBack, onFinished }: { info: SetupInfo; role: Role; onBack: () => void; onFinished: (r: FinishResult) => void }) {
   const { t } = useTranslation();
   const tunnel = role !== "none";
-  const [mode, setMode] = useState<"tunnel" | "lan" | "local">("lan");
+  const [mode, setMode] = useState<"tunnel" | "lan" | "local">(info.lan.length > 0 ? "lan" : tunnel ? "tunnel" : "local");
   const [lan, setLan] = useState(info.lan[0]?.address ?? "");
-  const [trust, setTrust] = useState(role === "peer");
   const [firewall, setFirewall] = useState(info.ufw !== "missing" && info.sshPorts.length > 0);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState("");
@@ -268,7 +267,7 @@ function AccessStep({ info, role, onBack, onFinished }: { info: SetupInfo; role:
     try {
       const res = await api<FinishResult>("/api/setup/finish", {
         method: "POST",
-        body: JSON.stringify({ access: mode, lanAddress: lan, trust: trust && info.lan.length > 0, firewall }),
+        body: JSON.stringify({ access: mode, lanAddress: lan, firewall }),
       });
       onFinished(res);
     } catch (err: unknown) {
@@ -304,7 +303,7 @@ function AccessStep({ info, role, onBack, onFinished }: { info: SetupInfo; role:
         ))}
       </div>
 
-      {mode === "lan" || trust ? (
+      {mode === "lan" ? (
         <div className="mt-4">
           <Field label={t("setup.lanAddress")}>
             <select value={lan} onChange={(e) => setLan(e.target.value)} className={input}>
@@ -319,9 +318,6 @@ function AccessStep({ info, role, onBack, onFinished }: { info: SetupInfo; role:
       ) : null}
 
       <div className="mt-4 space-y-3 text-sm">
-        {info.lan.length > 0 && tunnel ? (
-          <Check checked={trust} onChange={setTrust} label={t("setup.trust")} hint={t("setup.trustHint")} />
-        ) : null}
         {info.ufw !== "missing" ? (
           <Check
             checked={firewall}
@@ -339,7 +335,7 @@ function AccessStep({ info, role, onBack, onFinished }: { info: SetupInfo; role:
       {error ? <p className="mt-3 text-sm text-debian">{error}</p> : null}
       <div className="mt-5 flex flex-wrap gap-2">
         <button type="button" className={secondary} onClick={onBack} disabled={busy}>{t("setup.back")}</button>
-        <button type="button" className={primary} disabled={busy || ((mode === "lan" || trust) && !lan)} onClick={() => void finish()}>
+        <button type="button" className={primary} disabled={busy || (mode === "lan" && !lan)} onClick={() => void finish()}>
           {busy ? t("setup.working") : t("setup.finish")}
         </button>
       </div>

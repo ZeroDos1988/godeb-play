@@ -65,7 +65,6 @@ export default function Panel() {
         </p>
       ) : null}
 
-      <RemoteCard />
 
       <form
         className="mb-4 flex flex-wrap items-end gap-2"
@@ -121,74 +120,3 @@ export default function Panel() {
   );
 }
 
-type Remote = { open: boolean; address?: string; port: number; until?: string; url?: string; publicIp?: string };
-
-const durations = [30, 60, 120, 240, 480, 1440];
-
-// RemoteCard switches the temporary HTTPS access on the public address.
-function RemoteCard() {
-  const { t } = useTranslation();
-  const query = useGet<Remote>("/api/plugins/ufw/remote");
-  const [current, setCurrent] = useState<Remote | null>(null);
-  const [minutes, setMinutes] = useState(120);
-  const [busy, setBusy] = useState("");
-  const [error, setError] = useState("");
-  const view = current ?? query.data;
-
-  async function post(path: string, body?: object) {
-    setBusy(path);
-    setError("");
-    try {
-      setCurrent(await api<Remote>(path, { method: "POST", body: body ? JSON.stringify(body) : undefined }));
-    } catch (err: unknown) {
-      setError(err instanceof Error ? err.message : t("ufw.failed"));
-    } finally {
-      setBusy("");
-    }
-  }
-
-  if (!view) {
-    return null;
-  }
-  const until = view.until ? new Date(view.until).toLocaleString([], { dateStyle: "short", timeStyle: "short" }) : "";
-  return (
-    <div className={`${ui.card} mb-4 ${view.open ? "border-amber-400/40" : ""}`}>
-      <h3 className={ui.cardTitle}>{t("ufw.remote.title")}</h3>
-      {view.open ? (
-        <>
-          <p className="mt-2 text-sm text-amber-200">{t("ufw.remote.openUntil", { until })}</p>
-          <p className="mt-1 font-mono text-sm break-all">{view.url}</p>
-        </>
-      ) : (
-        <p className={ui.hint}>{t("ufw.remote.hint", { ip: view.publicIp || "—", port: view.port })}</p>
-      )}
-      <div className="mt-4 flex flex-wrap items-end gap-2">
-        <label className="text-sm">
-          <span className={ui.label}>{t("ufw.remote.duration")}</span>
-          <select className={ui.input} value={minutes} onChange={(e) => setMinutes(Number(e.target.value))}>
-            {durations.map((m) => (
-              <option key={m} value={m}>
-                {m < 60 ? t("ufw.remote.minutes", { count: m }) : t("ufw.remote.hours", { count: m / 60 })}
-              </option>
-            ))}
-          </select>
-        </label>
-        <button
-          type="button"
-          className={view.open ? ui.button : ui.primary}
-          disabled={busy !== ""}
-          onClick={() => void post("/api/plugins/ufw/remote", { minutes })}
-        >
-          {view.open ? t("ufw.remote.extend") : t("ufw.remote.open")}
-        </button>
-        {view.open ? (
-          <button type="button" className={ui.danger} disabled={busy !== ""} onClick={() => void post("/api/plugins/ufw/remote/close")}>
-            {t("ufw.remote.close")}
-          </button>
-        ) : null}
-      </div>
-      <p className={ui.hint}>{t("ufw.remote.safety")}</p>
-      {error ? <p className="mt-2 text-sm break-words text-debian">{error}</p> : null}
-    </div>
-  );
-}

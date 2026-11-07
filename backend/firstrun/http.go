@@ -163,12 +163,10 @@ type FinishRequest struct {
 	Access     string `json:"access"`
 	LANAddress string `json:"lanAddress"`
 	LANPort    int    `json:"lanPort"`
-	Trust      bool   `json:"trust"`
 	Firewall   bool   `json:"firewall"`
 }
 
-// Finish stores the access mode, sets up the trusted endpoint and the
-// firewall and marks the setup done. The public setup listener closes.
+// Finish stores the access mode, sets up the firewall and marks the setup done. The public setup listener closes.
 func Finish(ctx context.Context, req FinishRequest) ([]string, error) {
 	access, err := ResolveAccess(req.Access, req.LANAddress, req.LANPort)
 	if err != nil {
@@ -179,17 +177,6 @@ func Finish(ctx context.Context, req FinishRequest) ([]string, error) {
 		return nil, errors.New("Ohne WireGuard ist „nur über den Tunnel“ nicht erreichbar; Heimnetz oder nur lokal wählen")
 	}
 	var log []string
-	if req.Trust {
-		addr := req.LANAddress
-		if addr == "" {
-			addr = core.DefaultRoute(ctx).Src
-		}
-		if _, err := wireguard.SetTrust(ctx, true, addr, 0); err != nil {
-			log = append(log, "Trusted Endpoint nicht eingerichtet: "+err.Error())
-		} else {
-			log = append(log, "Trusted Endpoint aktiv: "+wireguard.LocalTrust().URL)
-		}
-	}
 	plan := FirewallPlan{SSHPorts: core.SSHPorts(ctx), UIPort: 8080, SetupPort: SetupPort(), Enable: req.Firewall}
 	if role.Role == wireguard.RoleNone {
 		plan.UIPort = 0

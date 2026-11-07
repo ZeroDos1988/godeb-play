@@ -50,8 +50,6 @@ type ClientSpec struct {
 	Keepalive      int
 	Created        time.Time
 	Site           bool
-	// Trust are the trusted endpoints the app pins (see trust.go).
-	Trust []TrustInfo
 }
 
 func clientPath(name string) string {
@@ -74,7 +72,6 @@ func RenderClient(s ClientSpec) string {
 	if s.Site {
 		fmt.Fprintf(&b, "# %s: %s\n", roleMarker, siteRole)
 	}
-	b.WriteString(renderTrustComments(s.Trust))
 	b.WriteString("[Interface]\n")
 	fmt.Fprintf(&b, "PrivateKey = %s\n", s.Keys.Private)
 	fmt.Fprintf(&b, "Address = %s/32\n", s.Address)

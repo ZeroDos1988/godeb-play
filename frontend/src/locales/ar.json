@@ -65,15 +65,12 @@
   },
   "overview": {
     "title": "نظرة عامة",
-    "loading": "جارٍ تحميل بيانات المضيف …",
     "unreachable": "البرنامج الخفي غير متاح. {{error}}",
     "kernel": "النواة",
     "sample": "جزء من بيانات المضيف قيمة نموذجية من Debian.",
     "cpu": "المعالج",
     "ram": "الذاكرة",
     "disk": "القرص",
-    "blockedCount": "{{count}} محظور",
-    "noneBlocked": "لا يوجد حظر",
     "tunnelUp": "النفق نشط",
     "tunnelDown": "النفق متوقف",
     "allGood": "كل شيء على ما يرام",
@@ -90,21 +87,12 @@
     "securityPending_other": "منها {{count}} تحديثات أمنية",
     "autoSecurityOn": "تُثبَّت التحديثات الأمنية تلقائيًا.",
     "autoSecurityOff": "التحديثات الأمنية يدويًا فقط.",
-    "jailLine": "{{now}} محظور · {{total}} إجمالًا",
     "tunnel": "النفق",
     "peersLine": "{{live}} من {{total}} أجهزة متصلة",
     "services": "الخدمات",
     "servicesLine": "{{running}} من {{total}} تعمل",
-    "certs": "الشهادات",
-    "certsExpiring_one": "{{count}} تنتهي قريبًا",
-    "certsExpiring_other": "{{count}} تنتهي قريبًا",
-    "certsOk_one": "{{count}} صالحة",
-    "certsOk_other": "{{count}} صالحة",
-    "certNext": "التالية: {{name}} حتى {{date}}",
     "uptimeDays": "{{days}} يوم {{hours}} ساعة",
-    "uptimeHours": "{{hours}} ساعة",
-    "certsExpired_one": "{{count}} منتهية",
-    "certsExpired_other": "{{count}} منتهية"
+    "uptimeHours": "{{hours}} ساعة"
   },
   "panel": {
     "mocked": "بيانات تجريبية: البرنامج أو الملف المطلوب غير موجود على هذا الخادم.",
@@ -116,23 +104,6 @@
     "notReady": "المجلد موجود، لكن معالج Go غير مسجّل.",
     "noView": "واجهة React غير موجودة بعد."
   },
-  "fail2ban": {
-    "title": "Fail2ban",
-    "description": "العناوين المحظورة بعد محاولات فاشلة كثيرة (تسجيل الدخول، SSH، البريد).",
-    "none": "لا توجد سجون نشطة.",
-    "blockedTitle": "عناوين IP المحظورة",
-    "noneBlocked": "لا يوجد عنوان محظور حاليًا.",
-    "unban": "إلغاء الحظر",
-    "unbanning": "جارٍ إلغاء الحظر …",
-    "unbanned": "تم إلغاء حظر {{ip}}.",
-    "unbanFailed": "فشل إلغاء الحظر",
-    "jail": "السجن",
-    "failedNow": "الإخفاقات الحالية",
-    "failedTotal": "إجمالي الإخفاقات",
-    "bannedNow": "المحظورة الآن",
-    "bannedTotal": "إجمالي المحظورة",
-    "ip": "عنوان IP"
-  },
   "apt": {
     "title": "APT",
     "description": "الحزم التي يبلّغ apt list --upgradable أنها قابلة للترقية.",
@@ -142,16 +113,6 @@
     "installed": "المثبّت",
     "available": "المتاح",
     "arch": "المعمارية"
-  },
-  "certbot": {
-    "title": "Certbot",
-    "description": "شهادات Let’s Encrypt لهذا الخادم وموعد انتهائها.",
-    "empty": "لا توجد شهادات في /etc/letsencrypt/live.",
-    "name": "الاسم",
-    "subject": "الموضوع",
-    "from": "صالح من",
-    "until": "صالح حتى",
-    "path": "المسار"
   },
   "systemd": {
     "title": "Systemd",
@@ -185,53 +146,13 @@
   },
   "wg": {
     "title": "WireGuard",
-    "description": "النفق والأجهزة. تحصل الأجهزة الجديدة على رمز QR أو ملف.",
     "status": "الحالة",
-    "up": "{{name}} نشط",
-    "down": "{{name}} غير نشط",
     "address": "العنوان",
-    "listen": "منفذ الاستماع",
-    "dns": "DNS",
     "publicKey": "المفتاح العام",
     "file": "الملف",
-    "none": "لا يوجد أقران.",
-    "name": "الاسم",
-    "ip": "IP",
-    "endpoint": "نقطة النهاية",
     "handshake": "المصافحة",
-    "transfer": "النقل",
-    "liveOnly": "مباشر فقط",
-    "notLive": "غير مباشر",
-    "noClient": "لا يوجد ملف عميل",
-    "mail": "إرسال بالبريد",
-    "new": "قرين جديد",
     "allowed": "AllowedIPs (العميل)",
-    "addressOptional": "العنوان (اختياري)",
-    "auto": "تلقائي",
-    "create": "إنشاء قرين",
-    "creating": "جارٍ توليد المفاتيح …",
-    "needConfig": "لا يمكن إنشاء أقران بدون wg0.conf قابل للقراءة.",
-    "createFailed": "تعذّر إنشاء القرين",
-    "createdLive": "تم إنشاء القرين {{name}} وتطبيقه مباشرة.",
-    "created": "تم إنشاء القرين {{name}}. {{detail}}",
-    "downloadFailed": "فشل التنزيل",
-    "qr": "رمز QR · {{name}}",
-    "qrAlt": "إعداد WireGuard {{name}}",
-    "qrLoading": "جارٍ توليد رمز QR …",
-    "qrHint": "امسحه في تطبيق WireGuard.",
-    "qrFailed": "رمز QR غير متاح",
-    "emailTitle": "إرسال بالبريد · {{name}}",
-    "recipient": "المستلم",
-    "emailHint": "يحتوي الملف على مفتاح خاص.",
-    "send": "إرسال",
-    "sending": "جارٍ الإرسال …",
-    "sent": "أُرسل الإعداد {{name}}.conf إلى {{to}}.",
-    "mailFailed": "فشل الإرسال",
-    "never": "أبدًا",
-    "excluded": "Excluded IPs",
-    "excludedPlaceholder": "e.g. 172.16.1.0/24",
-    "excludedHint": "Networks subtracted from AllowedIPs before writing the client config.",
-    "peers": "الأجهزة والمواقع"
+    "never": "أبدًا"
   },
   "enroll": {
     "title": "إعداد التحقق بخطوتين",
@@ -251,68 +172,11 @@
     "failed": "فشل الإعداد",
     "badCode": "رمز غير صالح"
   },
-  "mailgw": {
-    "title": "بوابة البريد",
-    "description": "يخزّن Postfix البريد الوارد والصادر ثم يمرّره إلى الخادم المنزلي عبر نفق WireGuard.",
-    "tunnel": "ربط WireGuard",
-    "tunnelLocal": "النفق المحلي 10.8.0.0/24",
-    "tunnelMissing": "لا توجد واجهة نفق",
-    "relayHint": "القفزة التالية {{host}}:25. إذا تعذّر الوصول يبقى البريد في الطابور.",
-    "mode": {
-      "relay": "يعيد التوجيه",
-      "buffer": "يخزّن مؤقتًا",
-      "idle": "غير مُعد"
-    },
-    "domain": "نطاق الترحيل",
-    "relay": "الخادم المنزلي",
-    "selector": "مُحدّد DKIM",
-    "apply": "إعداد الترحيل",
-    "applying": "يكتب Postfix …",
-    "applied": "تم إعداد الترحيل لـ {{domain}}.",
-    "setupFailed": "فشل الإعداد",
-    "health": "مكافحة القوائم السوداء",
-    "noDomain": "لا يوجد نطاق بعد. يبدأ فحص DNS بعد الإعداد.",
-    "check": {
-      "ptr": "PTR",
-      "spf": "SPF",
-      "dkim": "DKIM",
-      "dmarc": "DMARC"
-    },
-    "queue": "الطابور · {{count}}",
-    "flush": "سلّم الآن",
-    "flushing": "جارٍ التسليم …",
-    "flushed": "طُلب من الطابور التسليم.",
-    "flushFailed": "فشل التسليم",
-    "empty": "لا توجد رسائل في الطابور.",
-    "sender": "المرسل",
-    "recipient": "المستلم",
-    "time": "الوقت",
-    "status": "الحالة",
-    "reason": "السبب"
-  },
-  "cron": {
-    "description": "المهام المجدولة لهذا الخادم. تعمل المهام الجديدة كمؤقتات systemd وبأوامر معتمدة فقط.",
-    "last": "آخر تشغيل"
-  },
   "monitor": {
     "description": "حالة الخادم والسجل والأحداث."
   },
-  "mail": {
-    "description": "خادم بريد مع نطاقات وصناديق بريد وتحويلات وفلتر للبريد المزعج."
-  },
-  "postgres": {
-    "description": "قواعد البيانات والمستخدمون. يمكن الوصول إليها من هذا الخادم فقط، وليست عامة أبدًا."
-  },
   "logs": {
     "description": "تسجيلات الدخول والإجراءات والأخطاء في GoDeb."
-  },
-  "websites": {
-    "description": "مواقعك الخاصة ووكلاء إلى خدمات داخلية، مع شهادة Let’s Encrypt.",
-    "sites": "المواقع"
-  },
-  "pf": {
-    "description": "تحويل منافذ عامة من هذا الخادم إلى موقع، مثل خادم الألعاب على الجهاز الافتراضي في المنزل.",
-    "rules": "إعادات التوجيه"
   },
   "pluginManager": {
     "lead": "تشغيل الإضافات وإيقافها. تختفي الإضافة المتوقفة من القائمة؛ وتستمر الخدمات خلفها (مثل WireGuard أو جدار الحماية) في العمل."

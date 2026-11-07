@@ -18,9 +18,6 @@ var rulePattern = regexp.MustCompile(`^[A-Za-z0-9][A-Za-z0-9_.:/-]{0,79}$`)
 func Mount(mux *http.ServeMux) {
 	mux.HandleFunc("GET /api/plugins/ufw/status", handleStatus)
 	mux.HandleFunc("POST /api/plugins/ufw/rules", handleRule)
-	mux.HandleFunc("GET "+remoteBase, handleRemoteStatus)
-	mux.HandleFunc("POST "+remoteBase, handleRemoteOpen)
-	mux.HandleFunc("POST "+remoteBase+"/close", handleRemoteClose)
 }
 
 type statusResponse struct {

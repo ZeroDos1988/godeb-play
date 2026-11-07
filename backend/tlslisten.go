@@ -10,13 +10,12 @@ import (
 	"time"
 
 	"godebplay/backend/firstrun"
-	"godebplay/backend/remoteaccess"
 )
 
 // tlsListeners runs the self-signed HTTPS listeners GoDeb has besides
 // loopback and wg0: the public setup listener while the first-run setup is
 // open, later the LAN listener if the admin chose access from the home
-// network, and the temporary remote access on the public address.
+// network.
 type tlsListeners struct {
 	mu      sync.Mutex
 	handler http.Handler
@@ -36,8 +35,7 @@ func newTLSListeners(h http.Handler) *tlsListeners {
 }
 
 // desired lists the HTTPS addresses to serve: the setup listener while the
-// setup is open, otherwise the LAN listener and, while it lasts, the
-// temporary remote access on the public address.
+// setup is open, otherwise the LAN listener.
 func (t *tlsListeners) desired(now time.Time) map[string]string {
 	want := map[string]string{}
 	if firstrun.Required() {
@@ -46,9 +44,6 @@ func (t *tlsListeners) desired(now time.Time) map[string]string {
 	}
 	if addr := firstrun.LoadAccess().Addr(); addr != "" {
 		want[addr] = "lan"
-	}
-	if addr := remoteaccess.Load().Addr(now); addr != "" && want[addr] == "" {
-		want[addr] = "remote"
 	}
 	return want
 }
@@ -99,8 +94,6 @@ func (t *tlsListeners) open(addr, kind string) {
 	switch kind {
 	case "setup":
 		slog.Warn("Ersteinrichtung offen, Link mit Token: sudo godeb-play setup-url", "url", "https://"+addr, "zertifikat_sha256", fp)
-	case "remote":
-		slog.Warn("Fernzugang offen", "url", "https://"+addr, "bis", remoteaccess.Load().Until.Local().Format(time.DateTime), "zertifikat_sha256", fp)
 	default:
 		slog.Info("GoDeb Play lauscht im Heimnetz", "url", "https://"+addr)
 	}

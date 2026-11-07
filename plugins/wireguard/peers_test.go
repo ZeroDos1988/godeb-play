@@ -2,8 +2,6 @@ package wireguard
 
 import (
 	"context"
-	"net/http"
-	"net/http/httptest"
 	"net/netip"
 	"os/exec"
 	"strings"
@@ -135,63 +133,6 @@ func TestValidators(t *testing.T) {
 	}
 }
 
-func TestCreateRejectsBadInput(t *testing.T) {
-	mux := http.NewServeMux()
-	Mount(mux)
-	for _, body := range []string{
-		`{"name":"../etc","endpoint":"vpn.example.org:51820"}`,
-		`{"name":"phone","endpoint":"vpn.example.org"}`,
-		`{"name":"phone","endpoint":"vpn.example.org:51820","dns":"x"}`,
-		`{"name":"phone","endpoint":"vpn.example.org:51820","keepalive":-1}`,
-		`{"name":"phone","endpoint":"vpn.example.org:51820","publicKey":"not-a-key"}`,
-		`{"name":"phone","endpoint":"vpn.example.org:51820","site":true,"publicKey":"aGVsbG8taGVsbG8taGVsbG8taGVsbG8taGVsbG8tISE="}`,
-		`{"name":"phone","endpoint":"vpn.example.org:51820","extra":true}`,
-	} {
-		req := httptest.NewRequest(http.MethodPost, "/api/plugins/wireguard/peers", strings.NewReader(body))
-		rec := httptest.NewRecorder()
-		mux.ServeHTTP(rec, req)
-		if rec.Code != http.StatusBadRequest {
-			t.Fatalf("%s: status = %d body = %s", body, rec.Code, rec.Body.String())
-		}
-	}
-}
-
-func TestClientRoutesRejectBadID(t *testing.T) {
-	mux := http.NewServeMux()
-	Mount(mux)
-	for _, path := range []string{"/api/plugins/wireguard/peers/..%2Fwg0/config", "/api/plugins/wireguard/peers/a.b/qr"} {
-		req := httptest.NewRequest(http.MethodGet, path, nil)
-		rec := httptest.NewRecorder()
-		mux.ServeHTTP(rec, req)
-		if rec.Code != http.StatusBadRequest {
-			t.Fatalf("%s: status = %d body = %s", path, rec.Code, rec.Body.String())
-		}
-	}
-}
-
-func TestSendEmailValidatesBeforeReading(t *testing.T) {
-	mux := http.NewServeMux()
-	Mount(mux)
-	send := func(body string) int {
-		req := httptest.NewRequest(http.MethodPost, "/api/plugins/wireguard/peers/godeb-test-missing/send-email", strings.NewReader(body))
-		rec := httptest.NewRecorder()
-		mux.ServeHTTP(rec, req)
-		return rec.Code
-	}
-	for _, body := range []string{
-		`{"to":"anna@example.org, bob@example.org"}`,
-		`{"to":"anna@example.org\r\nBcc: x@y.z"}`,
-		`{"to":"nope"}`,
-	} {
-		if code := send(body); code != http.StatusBadRequest {
-			t.Fatalf("%s: status = %d", body, code)
-		}
-	}
-	if code := send(`{"to":"anna@example.org"}`); code == http.StatusOK || code == http.StatusBadRequest {
-		t.Fatalf("missing client: status = %d", code)
-	}
-}
-
 func TestGenerateKeypair(t *testing.T) {
 	if _, err := exec.LookPath("wg"); err != nil {
 		t.Skip("wg nicht installiert")
@@ -206,46 +147,6 @@ func TestGenerateKeypair(t *testing.T) {
 	again, err := PublicKey(context.Background(), keys.Private)
 	if err != nil || again != keys.Public {
 		t.Fatalf("pubkey = %q, %v", again, err)
-	}
-}
-
-func TestRenderQRForGeneratedClient(t *testing.T) {
-	for _, tool := range []string{"wg", "qrencode"} {
-		if _, err := exec.LookPath(tool); err != nil {
-			t.Skip(tool + " nicht installiert")
-		}
-	}
-	ctx := context.Background()
-	client, err := GenerateKeypair(ctx)
-	if err != nil {
-		t.Fatal(err)
-	}
-	server, err := GenerateKeypair(ctx)
-	if err != nil {
-		t.Fatal(err)
-	}
-	psk, err := GeneratePresharedKey(ctx)
-	if err != nil {
-		t.Fatal(err)
-	}
-	conf := RenderClient(ClientSpec{
-		Name:         "phone",
-		Keys:         client,
-		PresharedKey: psk,
-		Address:      netip.MustParseAddr("10.8.0.2"),
-		DNS:          []string{"1.1.1.1"},
-		ServerKey:    server.Public,
-		Endpoint:     "vpn.example.org:51820",
-		AllowedIPs:   []string{"0.0.0.0/0", "::/0"},
-		Keepalive:    25,
-		Created:      time.Now(),
-	})
-	png, err := RenderQR(ctx, []byte(conf))
-	if err != nil {
-		t.Fatal(err)
-	}
-	if !strings.HasPrefix(string(png), "\x89PNG\r\n\x1a\n") || len(png) < 500 {
-		t.Fatalf("no PNG: %d bytes", len(png))
 	}
 }
 

@@ -22,8 +22,6 @@ import (
 	"godebplay/backend/firstrun"
 	"godebplay/backend/logging"
 	"godebplay/backend/pluginmgr"
-	"godebplay/plugins/ufw"
-	"godebplay/plugins/wireguard"
 )
 
 // runAgent is `godeb-play agent`: the root half of GoDeb. It has no network
@@ -73,7 +71,6 @@ func runAgent(args []string, stderr io.Writer) int {
 		_ = srv.Shutdown(shutdown)
 	}()
 	core.Default.StartServices(ctx)
-	go ufw.WatchRemote(ctx)
 	slog.Info("GoDeb-Agent lauscht", "version", version, "socket", *sock, "web_benutzer", webUser, "log_level", os.Getenv("GODEB_LOG_LEVEL"))
 	if err := srv.Serve(ln); err != nil && !errors.Is(err, http.ErrServerClosed) {
 		fmt.Fprintf(stderr, "agent: %v\n", err)
@@ -94,7 +91,6 @@ func newAgentHandler(root string) (http.Handler, error) {
 	}
 	pluginmgr.Mount(mux, pluginsDir)
 	firstrun.MountPrivileged(mux)
-	wireguard.TrustListenerElsewhere()
 	slog.Info("Plugins geladen", "anzahl", len(plugins), "pfad", pluginsDir)
 
 	// Forwarded browser requests pass the agent's own 2FA check; internal

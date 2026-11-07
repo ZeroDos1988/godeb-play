@@ -19,11 +19,11 @@ func TestWriteSummaryShowsTunnelURL(t *testing.T) {
 	WriteSummary(&b, Summary{
 		Hostname: "vps", Version: "0.2.1", PublicIP: "203.0.113.5", Role: "hub", Access: AccessTunnel,
 		URLs:     []Link{{Label: "Über den WireGuard-Tunnel", URL: "http://10.8.0.1:8080"}},
-		Tunnel:   &TunnelSummary{Interface: "wg0", Address: "10.8.0.1", Network: "10.8.0.0/24", Endpoint: "203.0.113.5:51820", Sites: []SiteLink{{Name: "heim-vm", URL: "http://10.8.0.2:8080"}}},
+		Tunnel:   &TunnelSummary{Interface: "wg0", Address: "10.8.0.1", Network: "10.8.0.0/24", Endpoint: "203.0.113.5:51820"},
 		SSHPorts: []int{22}, Firewall: "active", Rules: []string{"22/tcp ALLOW Anywhere"},
 	})
 	out := b.String()
-	for _, want := range []string{"http://10.8.0.1:8080", "WireGuard-Hub", "nur über den WireGuard-Tunnel", "203.0.113.5:51820", "heim-vm http://10.8.0.2:8080", "22/tcp ALLOW"} {
+	for _, want := range []string{"http://10.8.0.1:8080", "WireGuard-Hub", "nur über den WireGuard-Tunnel", "203.0.113.5:51820", "22/tcp ALLOW"} {
 		if !strings.Contains(out, want) {
 			t.Fatalf("missing %q in\n%s", want, out)
 		}

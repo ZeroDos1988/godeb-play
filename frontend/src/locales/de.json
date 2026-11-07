@@ -282,13 +282,6 @@
     },
     "usual": "üblich",
     "usualIn": "üblich (eingehend)",
-    "sites": {
-      "none": "Noch keine Standorte. Einen Standort legt „sudo godeb site add“ auf dem Hub an oder WireGuard → Neuer Peer → „Standort“.",
-      "reachable": "erreichbar",
-      "unreachable": "nicht erreichbar",
-      "players": "{{players}} von {{slots}} Spielern",
-      "load": "CPU und RAM"
-    },
     "alerts": {
       "intro": "Bei neuen Störungen und Warnungen schickt GoDeb eine Nachricht, bei Entwarnung auf Wunsch auch. Dieselbe Meldung kommt höchstens alle 6 Stunden erneut, außer sie wird schlimmer. Auf dem Hub zählen Störungen der Standorte mit.",
       "enabled": "Alarme senden",
@@ -691,8 +684,6 @@
     "endpoint": "Endpoint für Clients",
     "hub": "Hub",
     "publicKey": "Öffentlicher Schlüssel",
-    "site": "Standort {{name}}",
-    "clients": "Clients",
     "trust": "Trusted Endpoint",
     "firewall": "Firewall (ufw): {{status}}",
     "fw": {

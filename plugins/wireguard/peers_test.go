@@ -4,9 +4,7 @@ import (
 	"context"
 	"net/netip"
 	"os/exec"
-	"strings"
 	"testing"
-	"time"
 )
 
 const testKey = "aGVsbG8taGVsbG8taGVsbG8taGVsbG8taGVsbG8tISE="
@@ -38,75 +36,18 @@ func TestParseDumpDropsSecrets(t *testing.T) {
 	}
 }
 
-func TestNextFreeIP(t *testing.T) {
-	got, err := NextFreeIP([]string{"10.8.0.1/24"}, []string{"10.8.0.2/32", "10.8.0.3", "0.0.0.0/0"})
-	if err != nil || got.String() != "10.8.0.4" {
-		t.Fatalf("got %v, %v", got, err)
-	}
-	if _, err := NextFreeIP([]string{"10.9.0.1/30"}, []string{"10.9.0.2/32"}); err == nil {
-		t.Fatal("expected full subnet")
-	}
-	if _, err := NextFreeIP([]string{"fd00::1/64"}, nil); err == nil {
-		t.Fatal("expected missing IPv4 subnet")
-	}
-	if _, err := checkAddress("10.8.0.2", []string{"10.8.0.1/24"}, []string{"10.8.0.2/32"}); err == nil {
-		t.Fatal("expected taken address")
-	}
-	if _, err := checkAddress("10.9.0.2", []string{"10.8.0.1/24"}, nil); err == nil {
-		t.Fatal("expected address outside subnet")
-	}
-}
-
-func TestRenderAndParseClient(t *testing.T) {
-	spec := ClientSpec{
-		Name:         "phone",
-		Keys:         Keypair{Private: "client-private", Public: "client-public"},
-		PresharedKey: "psk",
-		Address:      netip.MustParseAddr("10.8.0.5"),
-		DNS:          []string{"1.1.1.1"},
-		ServerKey:    "server-public",
-		Endpoint:     "vpn.example.org:51820",
-		AllowedIPs:   []string{"0.0.0.0/0", "::/0"},
-		Keepalive:    25,
-		Created:      time.Date(2026, 10, 13, 12, 0, 0, 0, time.UTC),
-	}
-	conf := RenderClient(spec)
-	for _, want := range []string{"PrivateKey = client-private", "Address = 10.8.0.5/32", "PresharedKey = psk", "PersistentKeepalive = 25"} {
-		if !strings.Contains(conf, want) {
-			t.Fatalf("missing %q in\n%s", want, conf)
-		}
-	}
-	c := ParseClient("phone", conf)
-	if c.PublicKey != "client-public" || c.Created != "2026-10-13T12:00:00Z" || c.Endpoint != "vpn.example.org:51820" {
-		t.Fatalf("client = %#v", c)
-	}
-	if len(c.Addresses) != 1 || c.Addresses[0] != "10.8.0.5/32" || len(c.AllowedIPs) != 2 {
-		t.Fatalf("client = %#v", c)
-	}
-
-	block := RenderServerPeer("phone", "client-public", "psk", spec.Address)
-	cfg := ParseConfig(sampleConfig + block)
-	if len(cfg.Peers) != 2 || cfg.Peers[1].Name != "phone" || cfg.Peers[1].AllowedIPs[0] != "10.8.0.5/32" {
-		t.Fatalf("peers = %#v", cfg.Peers)
-	}
-}
-
 func TestMergePeers(t *testing.T) {
 	conf := []Peer{{Name: "laptop", PublicKey: "a", AllowedIPs: []string{"10.8.0.2/32"}}}
 	live := []LivePeer{{PublicKey: "a", RxBytes: 10, TxBytes: 20}, {PublicKey: "b", AllowedIPs: []string{"10.8.0.3/32"}}}
-	clients := []Client{{Name: "laptop", PublicKey: "a"}, {Name: "orphan", PublicKey: "c", Addresses: []string{"10.8.0.9/32"}}}
-	got := MergePeers(conf, live, clients)
-	if len(got) != 3 {
+	got := MergePeers(conf, live)
+	if len(got) != 2 {
 		t.Fatalf("got %#v", got)
 	}
-	if got[0].ID != "laptop" || !got[0].Live || !got[0].InConfig || got[0].RxBytes != 10 {
+	if got[0].Name != "laptop" || !got[0].Live || !got[0].InConfig || got[0].RxBytes != 10 {
 		t.Fatalf("first = %#v", got[0])
 	}
-	if got[1].PublicKey != "b" || got[1].InConfig || got[1].HasClient {
+	if got[1].PublicKey != "b" || got[1].InConfig || got[1].AllowedIPs[0] != "10.8.0.3/32" {
 		t.Fatalf("second = %#v", got[1])
-	}
-	if got[2].ID != "orphan" || got[2].AllowedIPs[0] != "10.8.0.9/32" {
-		t.Fatalf("third = %#v", got[2])
 	}
 }
 
@@ -121,12 +62,6 @@ func TestValidators(t *testing.T) {
 		if _, err := validEndpoint(bad); err == nil {
 			t.Fatalf("accepted %q", bad)
 		}
-	}
-	if _, err := validDNS("1.1.1.1, nope"); err == nil {
-		t.Fatal("accepted bad dns")
-	}
-	if _, err := validAllowedIPs("0.0.0.0/0\nPostUp = id"); err == nil {
-		t.Fatal("accepted injected allowed ips")
 	}
 	if !validKey(testKey) || validKey("short") {
 		t.Fatal("validKey")

@@ -23,8 +23,6 @@ export type SetupSummaryData = {
     publicKey?: string;
     hub?: string;
     hubAddress?: string;
-    clients?: string[];
-    sites?: { name: string; address: string; url: string }[];
   };
   lanCert?: string;
   trust?: string;
@@ -97,10 +95,6 @@ export function SetupSummary({ data, actions }: { data: SetupSummaryData; action
           {tn.endpoint ? <Row label={t("summary.endpoint")} value={`${tn.endpoint} UDP`} mono /> : null}
           {tn.hub ? <Row label={t("summary.hub")} value={tn.hubAddress ? `${tn.hub} · ${tn.hubAddress}` : tn.hub} mono /> : null}
           {tn.publicKey ? <Row label={t("summary.publicKey")} value={tn.publicKey} mono /> : null}
-          {tn.sites?.map((s) => (
-            <Row key={s.name} label={t("summary.site", { name: s.name })} value={s.url} mono />
-          ))}
-          {tn.clients && tn.clients.length > 0 ? <Row label={t("summary.clients")} value={tn.clients.join(", ")} /> : null}
           {data.trust ? <Row label={t("summary.trust")} value={data.trust} mono /> : null}
         </Block>
       ) : null}
@@ -159,8 +153,6 @@ function SummarySheet({ data }: { data: SetupSummaryData }) {
           {tn.endpoint ? <SheetRow label={t("summary.endpoint")} value={`${tn.endpoint} UDP`} mono /> : null}
           {tn.hub ? <SheetRow label={t("summary.hub")} value={tn.hubAddress ? `${tn.hub} · ${tn.hubAddress}` : tn.hub} mono /> : null}
           {tn.publicKey ? <SheetRow label={t("summary.publicKey")} value={tn.publicKey} mono /> : null}
-          {tn.sites?.map((s) => <SheetRow key={s.name} label={t("summary.site", { name: s.name })} value={s.url} mono />)}
-          {tn.clients && tn.clients.length > 0 ? <SheetRow label={t("summary.clients")} value={tn.clients.join(", ")} /> : null}
           {data.trust ? <SheetRow label={t("summary.trust")} value={data.trust} mono /> : null}
         </SheetSection>
       ) : null}

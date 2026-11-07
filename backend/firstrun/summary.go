@@ -32,25 +32,16 @@ type Link struct {
 	Command string `json:"command,omitempty"` // shell command the note refers to
 }
 
-// SiteLink is a site (home VM) behind a hub.
-type SiteLink struct {
-	Name    string `json:"name"`
-	Address string `json:"address"`
-	URL     string `json:"url"`
-}
-
 // TunnelSummary describes wg0.
 type TunnelSummary struct {
-	Interface  string     `json:"interface"`
-	Address    string     `json:"address"`              // this host in the tunnel
-	Network    string     `json:"network,omitempty"`    // tunnel network (hub)
-	ListenPort int        `json:"listenPort,omitempty"` // hub
-	Endpoint   string     `json:"endpoint,omitempty"`   // what clients connect to (hub)
-	PublicKey  string     `json:"publicKey,omitempty"`
-	Hub        string     `json:"hub,omitempty"`        // peer: hub endpoint
-	HubAddress string     `json:"hubAddress,omitempty"` // peer: hub in the tunnel
-	Clients    []string   `json:"clients,omitempty"`
-	Sites      []SiteLink `json:"sites,omitempty"`
+	Interface  string `json:"interface"`
+	Address    string `json:"address"`              // this host in the tunnel
+	Network    string `json:"network,omitempty"`    // tunnel network (hub)
+	ListenPort int    `json:"listenPort,omitempty"` // hub
+	Endpoint   string `json:"endpoint,omitempty"`   // what clients connect to (hub)
+	PublicKey  string `json:"publicKey,omitempty"`
+	Hub        string `json:"hub,omitempty"`        // peer: hub endpoint
+	HubAddress string `json:"hubAddress,omitempty"` // peer: hub in the tunnel
 }
 
 // Summary is the setup overview.
@@ -172,22 +163,6 @@ func tunnelSummary(ctx context.Context, role wireguard.RoleInfo, publicIP string
 	if t.ListenPort > 0 && publicIP != "" {
 		t.Endpoint = net.JoinHostPort(publicIP, strconv.Itoa(t.ListenPort))
 	}
-	if clients, err := wireguard.LoadClients(); err == nil {
-		for _, c := range clients {
-			addr := ""
-			for _, a := range c.Addresses {
-				if p, err := netip.ParsePrefix(strings.TrimSpace(a)); err == nil && p.Addr().Is4() {
-					addr = p.Addr().String()
-					break
-				}
-			}
-			if c.Site {
-				t.Sites = append(t.Sites, SiteLink{Name: c.Name, Address: addr, URL: "http://" + net.JoinHostPort(addr, "8080")})
-			} else {
-				t.Clients = append(t.Clients, c.Name+" ("+addr+")")
-			}
-		}
-	}
 	return t
 }
 
@@ -242,12 +217,6 @@ func WriteSummary(w io.Writer, s Summary) {
 		}
 		if t.Hub != "" {
 			fmt.Fprintf(w, "  Hub:            %s, im Tunnel %s\n", t.Hub, t.HubAddress)
-		}
-		for _, site := range t.Sites {
-			fmt.Fprintf(w, "  Standort:       %s %s\n", site.Name, site.URL)
-		}
-		if len(t.Clients) > 0 {
-			fmt.Fprintf(w, "  Clients:        %s\n", strings.Join(t.Clients, ", "))
 		}
 	}
 	ports := make([]string, len(s.SSHPorts))

@@ -1,10 +1,8 @@
 package wireguard
 
 import (
-	"net/netip"
 	"strings"
 	"testing"
-	"time"
 )
 
 const (
@@ -13,12 +11,21 @@ const (
 	testPSK  = "FpCyhws9cxwWoV4xELtfJvjJN+zQVRPISllRWgeopVE="
 )
 
+// siteClientConf is the client file a GoDeb hub writes for a site.
 func siteClientConf() string {
-	return RenderClient(ClientSpec{
-		Name: "heim-vm", Keys: Keypair{Private: testPriv, Public: testPub}, PresharedKey: testPSK,
-		Address: mustAddr("10.8.0.2"), DNS: []string{"1.1.1.1"}, ServerKey: testPub,
-		Endpoint: "203.0.113.7:51820", AllowedIPs: []string{"10.8.0.0/24"}, Created: time.Unix(0, 0), Site: true,
-	})
+	return "# GoDeb-Client: heim-vm\n" +
+		"# GoDeb-PublicKey: " + testPub + "\n" +
+		"# GoDeb-Created: 1970-01-01T00:00:00Z\n" +
+		"# GoDeb-Role: site\n" +
+		"[Interface]\n" +
+		"PrivateKey = " + testPriv + "\n" +
+		"Address = 10.8.0.2/32\n" +
+		"DNS = 1.1.1.1\n" +
+		"\n[Peer]\n" +
+		"PublicKey = " + testPub + "\n" +
+		"PresharedKey = " + testPSK + "\n" +
+		"Endpoint = 203.0.113.7:51820\n" +
+		"AllowedIPs = 10.8.0.0/24\n"
 }
 
 func TestJoinAcceptsSiteClientFile(t *testing.T) {
@@ -83,23 +90,4 @@ func TestDetectRole(t *testing.T) {
 	if r := DetectRole(plain); r.Role != RolePeer || r.Address != "10.8.0.3" || r.HubHost() != "vpn.example.org" {
 		t.Fatalf("plain client detected as %+v", r)
 	}
-}
-
-func TestSiteMarkerRoundTrip(t *testing.T) {
-	c := ParseClient("heim-vm", siteClientConf())
-	if !c.Site {
-		t.Fatal("site marker not parsed")
-	}
-	plain := ParseClient("phone", strings.Replace(siteClientConf(), "# GoDeb-Role: site\n", "", 1))
-	if plain.Site {
-		t.Fatal("ordinary client marked as site")
-	}
-}
-
-func mustAddr(s string) netip.Addr {
-	a, err := netip.ParseAddr(s)
-	if err != nil {
-		panic(err)
-	}
-	return a
 }

@@ -155,7 +155,6 @@ Alle `/api`-Routen außer den oben genannten öffentlichen verlangen eine Sitzun
 | GET | `/api/plugins/monitor/events` | Ereignisse auf der Zeitachse |
 | GET | `/api/plugins/monitor/series` | Verlauf einer Messreihe |
 | GET | `/api/plugins/monitor/site` | (ohne Login, nur von der Tunnel-Adresse des Hubs) |
-| GET | `/api/plugins/monitor/sites` | (Hub) |
 | GET | `/api/plugins/monitor/summary` | (Ampel, Befunde, aktuelle Werte) |
 | GET | `/api/plugins/steam/games` | Spiele mit Zustand |
 | POST | `/api/plugins/steam/games/{game}/action` | (`start`, `stop`, `restart`) |

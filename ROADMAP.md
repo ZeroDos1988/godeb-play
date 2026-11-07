@@ -36,9 +36,10 @@ Konzept (aus dem GoDeb-Fahrplan, 03.11.): Spielserver gehören nicht in GoDeb. G
 
 - [ ] **(nach GoDeb 1.0) Gekoppelte Verwaltung mit dem Hub** (GoDeb-Fahrplan Phase 8): Play schlägt die nötigen Ports vor, der Hub legt die Weiterleitung nach Bestätigung mit 2FA an, nur für die eigene Tunnel-Adresse. Braucht Änderungen in GoDeb, deshalb erst nach dessen Feature-Freeze.
 - [ ] **(nach GoDeb 1.0) Gemeinsames Go-Modul mit GoDeb:** `auth`, `agent`, `core`, `db`, `firstrun`, `state`, Teile von `wireguard`, statt Kopien. Bis dahin Sicherheitsfixes am Unterbau in beiden Repos.
-- [ ] **(später) Weitere Spiele** (z. B. Valheim, Palworld, Satisfactory): je eine Beschreibung mit Prüfung und Fuzz-Test.
+- [x] **Weitere Spiele** (07.11.): Valheim und Satisfactory, je mit Prüfung und Tests. Weitere (z. B. Palworld) nach demselben Muster.
+- [ ] **(Nutzer) Valheim und Satisfactory** einmal auf echter Hardware starten: Ports, App-IDs und Startparameter stammen aus den Herstelleranleitungen.
 - [ ] **(später) Eigenes APT-Repo** wie bei GoDeb, wenn GoDeb Play auf mehr als einem Server läuft; bis dahin `.deb` aus den Releases.
-- [ ] **(später) Aufräumen im WireGuard-Paket:** Bibliotheksteile für Hub und Clients (`clients.go`, `hub.go`) sind ohne Route, werden aber vom Überwachungs-Plugin noch referenziert; mit dem gemeinsamen Modul entfernen.
+- [x] **Aufräumen im WireGuard-Paket** (07.11.): Hub- und Client-Teile (`clients.go`, `hub.go`, `cidr.go`) und die Standort-Abfrage der Überwachung entfernt; die WireGuard-Seite liest nur noch `wg0.conf` und `wg show`.
 
 ## Entscheidungen
 

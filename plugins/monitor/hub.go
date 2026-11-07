@@ -40,13 +40,22 @@ func init() {
 	metrics.RegisterCheck("hub", hubCheck)
 }
 
+// hubPort is GoDeb's web port on the hub's wg0 (GODEB_ADDR default).
+const hubPort = 8080
+
+// hubClient asks the hub over the tunnel; no redirects.
+var hubClient = &http.Client{
+	Timeout:       5 * time.Second,
+	CheckRedirect: func(*http.Request, []*http.Request) error { return http.ErrUseLastResponse },
+}
+
 // probeHub asks GoDeb on the hub for /api/health. Tests replace it.
 var probeHub = func(ctx context.Context, addr netip.Addr) error {
-	req, err := http.NewRequestWithContext(ctx, http.MethodGet, "http://"+net.JoinHostPort(addr.String(), strconv.Itoa(sitePort))+"/api/health", nil)
+	req, err := http.NewRequestWithContext(ctx, http.MethodGet, "http://"+net.JoinHostPort(addr.String(), strconv.Itoa(hubPort))+"/api/health", nil)
 	if err != nil {
 		return err
 	}
-	resp, err := siteClient.Do(req)
+	resp, err := hubClient.Do(req)
 	if err != nil {
 		return err
 	}
@@ -67,7 +76,7 @@ var probeHub = func(ctx context.Context, addr netip.Addr) error {
 var hubAddr = wireguard.HubTunnelAddr
 
 func runHub(ctx context.Context, _ *metrics.Collector, _ *metrics.Store) {
-	t := time.NewTicker(sitePoll)
+	t := time.NewTicker(time.Minute)
 	defer t.Stop()
 	for {
 		pollHub(ctx, time.Now())
@@ -118,7 +127,7 @@ func hubFindings(h hubState, now time.Time) []metrics.Finding {
 	if now.Sub(last) < hubStale {
 		return nil
 	}
-	detail := "Keine Antwort von " + h.addr.String() + ":" + strconv.Itoa(sitePort) + " über den Tunnel: " + h.lastErr
+	detail := "Keine Antwort von " + h.addr.String() + ":" + strconv.Itoa(hubPort) + " über den Tunnel: " + h.lastErr
 	if !h.lastOK.IsZero() {
 		detail += " (zuletzt erreichbar " + h.lastOK.Format("02.01. 15:04") + ")"
 	}

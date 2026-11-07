@@ -282,13 +282,6 @@
     },
     "usual": "usual",
     "usualIn": "usual (in)",
-    "sites": {
-      "none": "No sites yet. \"sudo godeb site add\" on the hub or WireGuard → new peer → \"Site\" creates one.",
-      "reachable": "reachable",
-      "unreachable": "unreachable",
-      "players": "{{players}} of {{slots}} players",
-      "load": "CPU and RAM"
-    },
     "alerts": {
       "intro": "GoDeb sends a message for new problems and warnings, and optionally when they are resolved. The same finding is repeated at most every 6 hours unless it gets worse. On the hub, problems of the sites count too.",
       "enabled": "Send alerts",
@@ -691,8 +684,6 @@
     "endpoint": "Endpoint for clients",
     "hub": "Hub",
     "publicKey": "Public key",
-    "site": "Site {{name}}",
-    "clients": "Clients",
     "trust": "Trusted endpoint",
     "firewall": "Firewall (ufw): {{status}}",
     "fw": {

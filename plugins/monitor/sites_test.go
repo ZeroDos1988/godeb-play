@@ -30,26 +30,6 @@ func TestBuildSiteStatus(t *testing.T) {
 	}
 }
 
-func TestSanitizeSite(t *testing.T) {
-	long := make([]byte, 500)
-	for i := range long {
-		long[i] = 'x'
-	}
-	st := sanitizeSite(SiteStatus{
-		Host:     string(long),
-		Status:   "kaputt",
-		Findings: []metrics.Finding{{ID: "a", Status: metrics.StatusOK, Title: string(long), Detail: "geheim"}},
-		Values:   map[string]float64{"cpu": 5, "evil": 1},
-		Games:    []SiteGame{{ID: "enshrouded"}, {ID: "BAD ID"}},
-	})
-	if len(st.Host) != 64 || st.Status != metrics.StatusWarning || len(st.Findings[0].Title) != 160 || st.Findings[0].Detail != "" {
-		t.Fatalf("site = %+v", st)
-	}
-	if st.Findings[0].Status != metrics.StatusWarning || len(st.Values) != 1 || len(st.Games) != 1 {
-		t.Fatalf("site = %+v", st)
-	}
-}
-
 func TestSiteAnswersOnlyTheHub(t *testing.T) {
 	startTest(t)
 	// No wg0.conf here: this host is no peer, so nobody gets an answer.

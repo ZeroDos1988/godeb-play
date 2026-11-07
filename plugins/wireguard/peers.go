@@ -1,8 +1,6 @@
 package wireguard
 
 import (
-	"errors"
-	"io/fs"
 	"net/http"
 	"sync"
 
@@ -11,12 +9,11 @@ import (
 
 const iface = "wg0"
 
-// writeMu serialises changes to wg0.conf and the clients directory.
+// writeMu serialises changes to wg0.conf.
 var writeMu sync.Mutex
 
-// PeerView merges wg0.conf, `wg show` and the client file of one peer.
+// PeerView merges wg0.conf and `wg show` for one peer.
 type PeerView struct {
-	ID              string   `json:"id,omitempty"`
 	Name            string   `json:"name,omitempty"`
 	PublicKey       string   `json:"publicKey"`
 	AllowedIPs      []string `json:"allowedIPs"`
@@ -26,9 +23,6 @@ type PeerView struct {
 	TxBytes         int64    `json:"txBytes"`
 	InConfig        bool     `json:"inConfig"`
 	Live            bool     `json:"live"`
-	HasClient       bool     `json:"hasClient"`
-	Created         string   `json:"created,omitempty"`
-	Site            bool     `json:"site,omitempty"`
 }
 
 type interfaceView struct {
@@ -42,14 +36,10 @@ type interfaceView struct {
 
 type peersResponse struct {
 	core.CommandEnvelope
-	Path       string `json:"path"`
-	ClientsDir string `json:"clientsDir"`
-	LiveDetail string `json:"liveDetail,omitempty"`
-	// DefaultEndpoint is the server endpoint of an existing client, so new
-	// peers do not inherit the tunnel address the UI was opened through.
-	DefaultEndpoint string        `json:"defaultEndpoint,omitempty"`
-	Interface       interfaceView `json:"interface"`
-	Peers           []PeerView    `json:"peers"`
+	Path       string        `json:"path"`
+	LiveDetail string        `json:"liveDetail,omitempty"`
+	Interface  interfaceView `json:"interface"`
+	Peers      []PeerView    `json:"peers"`
 	// Configured is false while wg0.conf is missing; the UI then offers to
 	// join a hub instead of showing sample data as editable.
 	Configured bool     `json:"configured"`
@@ -57,7 +47,7 @@ type peersResponse struct {
 }
 
 func handlePeers(w http.ResponseWriter, r *http.Request) {
-	resp := peersResponse{Path: configPath, ClientsDir: clientsDir}
+	resp := peersResponse{Path: configPath}
 	resp.Command = []string{"wg", "show", iface, "dump"}
 
 	content := sampleConfig
@@ -80,14 +70,6 @@ func handlePeers(w http.ResponseWriter, r *http.Request) {
 
 	cfg := ParseConfig(content)
 	live := ParseDump(dump)
-	clients := []Client{}
-	if !resp.Mocked {
-		var err error
-		clients, err = LoadClients()
-		if err != nil && !errors.Is(err, fs.ErrNotExist) {
-			resp.Detail = clientsDir + ": " + err.Error()
-		}
-	}
 
 	resp.Interface = interfaceView{
 		Name:       iface,
@@ -100,19 +82,13 @@ func handlePeers(w http.ResponseWriter, r *http.Request) {
 	if resp.Interface.ListenPort == "" {
 		resp.Interface.ListenPort = live.ListenPort
 	}
-	resp.Peers = MergePeers(cfg.Peers, live.Peers, clients)
-	for _, c := range clients {
-		if c.Endpoint != "" {
-			resp.DefaultEndpoint = c.Endpoint
-			break
-		}
-	}
+	resp.Peers = MergePeers(cfg.Peers, live.Peers)
 	core.WriteJSON(w, http.StatusOK, resp)
 }
 
-// MergePeers joins the three sources by public key. Order follows wg0.conf,
-// then peers only known to the kernel, then orphaned client files.
-func MergePeers(conf []Peer, live []LivePeer, clients []Client) []PeerView {
+// MergePeers joins both sources by public key. Order follows wg0.conf, then
+// peers only known to the kernel.
+func MergePeers(conf []Peer, live []LivePeer) []PeerView {
 	out := []PeerView{}
 	index := map[string]int{}
 	add := func(key string) *PeerView {
@@ -145,43 +121,10 @@ func MergePeers(conf []Peer, live []LivePeer, clients []Client) []PeerView {
 		v.RxBytes = p.RxBytes
 		v.TxBytes = p.TxBytes
 	}
-	for _, c := range clients {
-		v := add(c.PublicKey)
-		v.ID = c.Name
-		v.HasClient = true
-		v.Created = c.Created
-		v.Site = c.Site
-		if v.Name == "" {
-			v.Name = c.Name
-		}
-		if len(v.AllowedIPs) == 0 {
-			v.AllowedIPs = c.Addresses
-		}
-	}
 	return out
 }
 
-// PeerRequest describes a new client. The web UI and `godeb-play setup` both go
-// through CreatePeer so wg0.conf, the clients directory and IPAM stay in sync.
-type PeerRequest struct {
-	Name        string `json:"name"`
-	Endpoint    string `json:"endpoint"`
-	DNS         string `json:"dns"`
-	AllowedIPs  string `json:"allowedIPs"`
-	ExcludedIPs string `json:"excludedIPs"`
-	Address     string `json:"address"`
-	Keepalive   *int   `json:"keepalive"`
-	// Site creates the peer for a GoDeb host behind the hub: AllowedIPs is
-	// the tunnel network only, no DNS, keepalive 25, and tunnel clients may
-	// reach its web UI through the hub (SyncHubRoutes).
-	Site bool `json:"site"`
-	// PublicKey, when set, uses a key generated on the device: GoDeb stores
-	// only the public key in wg0.conf and does not write a client file with
-	// a private key. Mutually exclusive with Site.
-	PublicKey string `json:"publicKey,omitempty"`
-}
-
-// RequestError carries the HTTP status for a rejected peer request.
+// RequestError carries the HTTP status for a rejected join request.
 type RequestError struct {
 	Status int
 	Msg    string

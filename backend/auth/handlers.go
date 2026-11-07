@@ -362,13 +362,11 @@ func protected(raw string) bool {
 		return false
 	}
 	switch p {
-	// trust/info: public key and LAN URL of the trusted endpoint, read by the
-	// hub over the tunnel when it writes client files. Nothing secret.
 	// setup/status tells the UI whether to show the wizard; setup/admin needs
 	// the one-time token and only works until the first account exists.
 	case "/api/setup/status", "/api/setup/admin":
 		return false
-	case "/api/health", "/api/plugins/wireguard/trust/info", "/api/plugins/wireguard/android", "/api/plugins/wireguard/android/apk",
+	case "/api/health",
 		// identify: first login step, same answer for every name (see identify).
 		"/api/auth/identify", "/api/auth/login", "/api/auth/logout", "/api/auth/oidc/providers", "/api/auth/oidc/resume":
 		return false

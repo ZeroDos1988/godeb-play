@@ -1,0 +1,6 @@
+{
+  "id": "systemd",
+  "name": "Systemd",
+  "apt_dependencies": [],
+  "systemd_services": []
+}

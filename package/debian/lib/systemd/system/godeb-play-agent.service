@@ -1,0 +1,39 @@
+[Unit]
+Description=GoDeb root agent (system changes for the web interface)
+After=network-online.target wg-quick@wg0.service
+Wants=network-online.target
+Before=godeb-play.service
+
+[Service]
+Type=simple
+Environment=GODEB_ROOT=/usr/share/godeb-play
+# No network listener: only this socket, 0660 root:godeb-play, and the agent
+# checks the peer uid (root or godeb-play) with SO_PEERCRED.
+ExecStart=/usr/bin/godeb-play agent --socket /run/godeb-play-agent/agent.sock
+RuntimeDirectory=godeb-play-agent
+RuntimeDirectoryMode=0755
+# Monitoring history (metrics.db), root only.
+StateDirectory=godeb-play-agent
+StateDirectoryMode=0700
+Restart=on-failure
+RestartSec=2
+UMask=0077
+
+# The agent runs as root and its children (apt-get, ufw, nft, wg, systemctl)
+# inherit this sandbox, so /etc, /usr and /proc/sys stay writable
+# and capabilities are not reduced. Only options none of them need are set.
+NoNewPrivileges=yes
+ProtectHome=yes
+PrivateTmp=yes
+ProtectHostname=yes
+ProtectClock=yes
+ProtectKernelLogs=yes
+ProtectControlGroups=yes
+RestrictRealtime=yes
+LockPersonality=yes
+SystemCallArchitectures=native
+RestrictAddressFamilies=AF_UNIX AF_INET AF_INET6 AF_NETLINK
+KeyringMode=private
+
+[Install]
+WantedBy=multi-user.target

@@ -1,0 +1,64 @@
+# If you prefer the allow list template instead of the deny list, see community template:
+# https://github.com/github/gitignore/blob/main/community/Golang/Go.AllowList.gitignore
+#
+# Binaries for programs and plugins
+*.exe
+*.exe~
+*.dll
+*.so
+*.dylib
+
+# Test binary, built with `go test -c`
+*.test
+
+# Code coverage profiles and other test artifacts
+*.out
+coverage.*
+!coverage.go
+*.coverprofile
+profile.cov
+
+# Dependency directories (remove the comment below to include it)
+# vendor/
+
+# Go workspace file
+go.work
+go.work.sum
+
+# env file
+.env
+
+# Node / Vite
+node_modules/
+dist/
+frontend/dist/
+.vite/
+*.tsbuildinfo
+
+# Go build artifacts
+/bin/
+/godeb
+/godeb-play
+/backend/godeb
+/backend/backend
+
+# Editor/IDE
+# .idea/
+# .vscode/
+
+# Debian package build output
+*.deb
+package/debian/usr/
+
+# Local dev state (see CLAUDE.md)
+/.dev/
+
+# Claude Code: worktrees and personal settings stay local; .claude/skills is shared
+.claude/worktrees/
+.claude/settings.local.json
+
+# Playwright
+frontend/test-results/
+frontend/playwright-report/
+frontend/blob-report/
+frontend/playwright/.cache/

@@ -1,0 +1,6 @@
+{
+  "id": "logs",
+  "name": "Protokoll",
+  "apt_dependencies": [],
+  "systemd_services": []
+}

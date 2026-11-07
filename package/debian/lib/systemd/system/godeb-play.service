@@ -1,0 +1,59 @@
+[Unit]
+Description=GoDeb web interface (unprivileged)
+After=network-online.target wg-quick@wg0.service godeb-play-agent.service
+Wants=network-online.target
+Requires=godeb-play-agent.service
+
+[Service]
+Type=simple
+User=godeb-play
+Group=godeb-play
+Environment=GODEB_ROOT=/usr/share/godeb-play
+# Loopback plus the WireGuard interface (bound as soon as wg0 has an address).
+# Never bind plain HTTP to a LAN or WAN.
+Environment=GODEB_ADDR=127.0.0.1:8080,wg0:8080
+# Everything that changes the system goes to the root agent over this socket.
+Environment=GODEB_AGENT_SOCKET=/run/godeb-play-agent/agent.sock
+ExecStart=/usr/bin/godeb-play
+StateDirectory=godeb-play
+StateDirectoryMode=0700
+LogsDirectory=godeb-play
+LogsDirectoryMode=0750
+WorkingDirectory=/var/lib/godeb-play
+Restart=on-failure
+RestartSec=2
+UMask=0077
+
+# The web process is the network-facing half: login, sessions, the setup
+# and LAN listeners and the trusted endpoint. It needs no privileges, only
+# its state directory, its log and the agent socket.
+NoNewPrivileges=yes
+CapabilityBoundingSet=
+AmbientCapabilities=
+ProtectSystem=strict
+ProtectHome=yes
+PrivateTmp=yes
+PrivateDevices=yes
+ProtectHostname=yes
+ProtectClock=yes
+ProtectKernelTunables=yes
+ProtectKernelModules=yes
+ProtectKernelLogs=yes
+ProtectControlGroups=yes
+ProtectProc=invisible
+RestrictNamespaces=yes
+RestrictRealtime=yes
+RestrictSUIDSGID=yes
+LockPersonality=yes
+MemoryDenyWriteExecute=yes
+RemoveIPC=yes
+SystemCallArchitectures=native
+SystemCallFilter=@system-service
+SystemCallFilter=~@privileged @resources
+SystemCallErrorNumber=EPERM
+# AF_NETLINK: interface addresses for wg0 and the LAN listener.
+RestrictAddressFamilies=AF_UNIX AF_INET AF_INET6 AF_NETLINK
+KeyringMode=private
+
+[Install]
+WantedBy=multi-user.target

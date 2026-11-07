@@ -1,0 +1,14 @@
+Package: godeb-play
+Version: 0.1.0
+Section: games
+Priority: optional
+Architecture: amd64
+Maintainer: ZeroDos1988 <336650567+ZeroDos1988@users.noreply.github.com>
+Homepage: https://github.com/ZeroDos1988/godeb-play
+Depends: libc6, adduser, systemd, ufw, wireguard-tools, qrencode, fail2ban
+Description: Game server panel that joins a GoDeb hub over WireGuard
+ GoDeb Play is a small web panel for game servers on a home server
+ (container or VM). It joins a GoDeb hub as a site over WireGuard, so the
+ game servers are reachable through the hub's public IP without port
+ forwarding on the home router. Login with mandatory TOTP, privileged steps
+ in a separate root agent.

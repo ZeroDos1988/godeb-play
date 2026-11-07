@@ -1,0 +1,8 @@
+{
+  "id": "systemd",
+  "name": "Dienste",
+  "description": "Serverdienste mit Status, Laufzeit, CPU und RAM; starten, neu starten, stoppen",
+  "icon": "cogs",
+  "group": "system",
+  "order": 30
+}

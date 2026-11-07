@@ -1,0 +1,6 @@
+{
+  "id": "ufw",
+  "name": "UFW",
+  "apt_dependencies": ["ufw"],
+  "systemd_services": ["ufw.service"]
+}

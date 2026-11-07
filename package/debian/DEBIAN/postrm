@@ -1,0 +1,28 @@
+#!/bin/sh
+set -e
+
+if command -v systemctl >/dev/null 2>&1; then
+	if [ "$1" = "remove" ] || [ "$1" = "purge" ]; then
+		systemctl disable --now godeb-play.service godeb-play-agent.service >/dev/null 2>&1 || true
+	fi
+	systemctl daemon-reload >/dev/null 2>&1 || true
+fi
+
+if [ "$1" = "remove" ] || [ "$1" = "purge" ]; then
+	rm -f /etc/fail2ban/jail.d/godeb-play.local /etc/fail2ban/jail.d/godeb-play-sshd.local /etc/fail2ban/filter.d/godeb-play.conf
+	if command -v systemctl >/dev/null 2>&1; then
+		systemctl try-restart fail2ban.service >/dev/null 2>&1 || true
+	fi
+fi
+
+if [ "$1" = "purge" ]; then
+	rm -rf /var/lib/godeb-play /etc/godeb-play /var/log/godeb-play /var/lib/godeb-play-agent
+	if getent passwd godeb-play >/dev/null; then
+		deluser --system godeb-play >/dev/null 2>&1 || userdel godeb-play >/dev/null 2>&1 || true
+	fi
+	if getent group godeb-play >/dev/null; then
+		delgroup --system godeb-play >/dev/null 2>&1 || groupdel godeb-play >/dev/null 2>&1 || true
+	fi
+fi
+
+exit 0

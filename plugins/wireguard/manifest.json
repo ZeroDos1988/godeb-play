@@ -1,0 +1,8 @@
+{
+  "id": "wireguard",
+  "name": "WireGuard",
+  "description": "Peers, Client-Konfigurationen und QR-Codes für wg0",
+  "icon": "network",
+  "group": "network",
+  "order": 50
+}

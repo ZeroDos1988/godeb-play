@@ -1,0 +1,51 @@
+name: Sicherheitsscan
+
+# Known vulnerabilities appear between releases. This runs the same scans
+# as the CI every week without a push; a failed run is mailed to the repo
+# owner and means a fix release.
+on:
+  schedule:
+    - cron: "17 5 * * 1"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  scan:
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v7
+
+      - uses: actions/setup-go@v7
+        with:
+          go-version-file: go.mod
+
+      - uses: actions/setup-node@v7
+        with:
+          node-version: "22"
+
+      - name: govulncheck
+        # Same pin as in ci.yml.
+        run: GOTOOLCHAIN="$(go mod edit -json | jq -r .Toolchain)" go run golang.org/x/vuln/cmd/govulncheck@v1.1.4 ./...
+
+      - name: npm audit
+        working-directory: frontend
+        run: npm audit --audit-level=moderate
+
+  fuzz:
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-go@v7
+        with:
+          go-version-file: go.mod
+      - name: Fuzz-Tests (je 2 Minuten)
+        run: ./scripts/fuzz.sh 2m
+      - name: Fund sichern
+        if: failure()
+        uses: actions/upload-artifact@v7
+        with:
+          name: fuzz-funde
+          path: "**/testdata/fuzz/**"
+          retention-days: 30

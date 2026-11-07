@@ -1,0 +1,37 @@
+#!/bin/sh
+set -e
+
+if ! getent group godeb-play >/dev/null; then
+	addgroup --system godeb-play
+fi
+
+if ! getent passwd godeb-play >/dev/null; then
+	adduser --system --ingroup godeb-play --home /var/lib/godeb-play --no-create-home --shell /usr/sbin/nologin godeb-play
+fi
+
+install -d -o godeb-play -g godeb-play -m 0700 /var/lib/godeb-play
+chmod 0755 /usr/bin/godeb-play
+
+install -d -m 0700 /etc/wireguard /etc/godeb-play
+
+install -d -o godeb-play -g adm -m 0750 /var/log/godeb-play
+[ -e /var/log/godeb-play/auth.log ] || install -o godeb-play -g adm -m 0640 /dev/null /var/log/godeb-play/auth.log
+chown godeb-play:adm /var/log/godeb-play/auth.log
+
+if ! /usr/share/godeb-play/scripts/setup-fail2ban.sh; then
+	echo "godeb-play: fail2ban-Einrichtung fehlgeschlagen; später erneut: /usr/share/godeb-play/scripts/setup-fail2ban.sh" >&2
+fi
+
+if command -v systemctl >/dev/null 2>&1; then
+	systemctl daemon-reload || true
+	systemctl enable godeb-play-agent.service godeb-play.service || true
+	systemctl restart godeb-play-agent.service || true
+	systemctl restart godeb-play.service || true
+fi
+
+# Fresh installs: print the link to the web wizard (one-time token, only shown
+# to root here). Configured servers print the overview.
+sleep 2
+/usr/bin/godeb-play setup-url 2>/dev/null || true
+
+exit 0

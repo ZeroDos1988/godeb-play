@@ -1,0 +1,17 @@
+# Managed by godeb-play (scripts/setup-fail2ban.sh)
+[godeb-play]
+enabled = true
+port = 8080,8443
+filter = godeb-play
+logpath = /var/log/godeb-play/auth.log
+backend = auto
+# Every failed login step counts: unknown name (step 1), wrong password
+# (step 2), wrong 2FA or backup code (step 3). Five within 10 minutes ban
+# the address for 10 minutes; each further ban of the same address lasts
+# twice as long, at most a day.
+maxretry = 5
+findtime = 600
+bantime = 600
+bantime.increment = true
+bantime.factor = 2
+bantime.maxtime = 86400

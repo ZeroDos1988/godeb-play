@@ -4,6 +4,8 @@ import (
 	"bytes"
 	"context"
 	"errors"
+	"fmt"
+	"io"
 	"log/slog"
 	"os"
 	"os/exec"
@@ -89,6 +91,27 @@ func run(ctx context.Context, timeout time.Duration, stdin string, failLevel slo
 	}
 	logCommand(logCtx, res, time.Since(start), failLevel)
 	return res
+}
+
+// RunStream executes a long command (SteamCMD, apt-get) without a shell and
+// writes stdout and stderr to out as they come, for live job logs. env adds
+// variables; like Run it pins the C locale and logs the command.
+func RunStream(ctx context.Context, timeout time.Duration, env []string, out io.Writer, name string, args ...string) error {
+	logCtx := ctx
+	ctx, cancel := context.WithTimeout(ctx, timeout)
+	defer cancel()
+	cmd := exec.CommandContext(ctx, name, args...)
+	cmd.Env = append(os.Environ(), "LC_ALL=C", "LANG=C", "DEBIAN_FRONTEND=noninteractive", "UCF_FORCE_CONFFOLD=1")
+	cmd.Env = append(cmd.Env, env...)
+	cmd.Stdout = out
+	cmd.Stderr = out
+	start := time.Now()
+	err := cmd.Run()
+	if ctx.Err() == context.DeadlineExceeded {
+		err = fmt.Errorf("Zeitlimit %s überschritten", timeout)
+	}
+	logCommand(logCtx, CommandResult{Command: append([]string{name}, args...), Err: err}, time.Since(start), slog.LevelWarn)
+	return err
 }
 
 func logCommand(ctx context.Context, res CommandResult, took time.Duration, failLevel slog.Level) {

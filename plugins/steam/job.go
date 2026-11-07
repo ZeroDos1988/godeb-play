@@ -6,11 +6,11 @@ import (
 	"fmt"
 	"io"
 	"log/slog"
-	"os"
-	"os/exec"
 	"strings"
 	"sync"
 	"time"
+
+	"godebplay/backend/core"
 )
 
 const maxLogLines = 400
@@ -103,14 +103,7 @@ func (h *jobHandle) logf(format string, args ...any) {
 // run executes a command without a shell and streams its output into the
 // job log. SteamCMD redraws progress with \r, so both \r and \n split lines.
 func (h *jobHandle) run(ctx context.Context, timeout time.Duration, env []string, name string, args ...string) error {
-	ctx, cancel := context.WithTimeout(ctx, timeout)
-	defer cancel()
-	cmd := exec.CommandContext(ctx, name, args...)
-	cmd.Env = append(os.Environ(), "LC_ALL=C", "LANG=C", "DEBIAN_FRONTEND=noninteractive")
-	cmd.Env = append(cmd.Env, env...)
 	pr, pw := io.Pipe()
-	cmd.Stdout = pw
-	cmd.Stderr = pw
 	h.logf("$ %s %s", name, strings.Join(args, " "))
 	done := make(chan struct{})
 	go func() {
@@ -124,12 +117,9 @@ func (h *jobHandle) run(ctx context.Context, timeout time.Duration, env []string
 			}
 		}
 	}()
-	err := cmd.Run()
+	err := core.RunStream(ctx, timeout, env, pw, name, args...)
 	pw.Close()
 	<-done
-	if ctx.Err() == context.DeadlineExceeded {
-		return fmt.Errorf("%s: Zeitlimit %s überschritten", name, timeout)
-	}
 	if err != nil {
 		return fmt.Errorf("%s: %w", name, err)
 	}

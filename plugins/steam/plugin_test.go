@@ -12,6 +12,7 @@ import (
 	"path/filepath"
 	"strings"
 	"testing"
+	"time"
 
 	"godebplay/plugins/wireguard"
 )
@@ -297,4 +298,18 @@ func FuzzValidateEnshrouded(f *testing.F) {
 			}
 		}
 	})
+}
+
+func TestJobRunStreamsLines(t *testing.T) {
+	j := &jobHandle{r: &jobRunner{job: &Job{Log: []string{}}}}
+	if err := j.run(context.Background(), 10*time.Second, nil, "printf", `10%%\r50%%\rfertig\n`); err != nil {
+		t.Fatal(err)
+	}
+	got := strings.Join(j.r.job.Log, "|")
+	if !strings.Contains(got, "10%|50%|fertig") {
+		t.Fatalf("log = %q", got)
+	}
+	if err := j.run(context.Background(), 10*time.Second, nil, "false"); err == nil {
+		t.Fatal("failing command reported no error")
+	}
 }

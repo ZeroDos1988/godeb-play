@@ -1,0 +1,75 @@
+name: APT-Repo
+
+# Rebuilds the signed APT repository on GitHub Pages from all published
+# releases. Prepared, not switched on: it only runs by hand. GitHub Pages is
+# public even for a private repo, so every package would be downloadable.
+# Switching on (ROADMAP.md "Eigenes APT-Repo"): secret APT_SIGNING_KEY,
+# Pages with source "GitHub Actions", then add workflow_call and
+# release: types [released] here and call it from the release job in ci.yml.
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: pages
+  cancel-in-progress: false
+
+jobs:
+  build:
+    runs-on: ubuntu-24.04
+    # Same sq/sqv/apt as on the servers.
+    container: debian:trixie
+    steps:
+      - name: Werkzeuge
+        run: |
+          apt-get update
+          apt-get install -y --no-install-recommends apt-utils ca-certificates gh git sq sqv
+
+      - uses: actions/checkout@v7
+
+      - name: Pakete aus den Releases
+        env:
+          GH_TOKEN: ${{ github.token }}
+        # Every release goes to trixie-testing, releases not marked as
+        # pre-release also to trixie (see scripts/build-apt-repo.sh).
+        run: |
+          mkdir -p debs/stable debs/testing
+          gh release list --repo "$GITHUB_REPOSITORY" --limit 1000 --exclude-drafts --json tagName,isPrerelease \
+            --jq '.[] | "\(.tagName) \(.isPrerelease)"' |
+            while read -r tag pre; do
+              gh release download "$tag" --repo "$GITHUB_REPOSITORY" --pattern 'godeb-play_*.deb' --dir debs/testing || true
+              if [ "$pre" = false ]; then
+                gh release download "$tag" --repo "$GITHUB_REPOSITORY" --pattern 'godeb-play_*.deb' --dir debs/stable || true
+              fi
+            done
+          ls -l debs/stable debs/testing
+          # Need at least one package; empty repo is useless.
+          test -n "$(find debs/testing -name 'godeb-play_*.deb' | head -n 1)"
+
+      - name: Repo bauen und signieren
+        env:
+          APT_SIGNING_KEY: ${{ secrets.APT_SIGNING_KEY }}
+        run: |
+          key="$RUNNER_TEMP/signing.pgp"
+          (umask 077; printf '%s\n' "$APT_SIGNING_KEY" >"$key")
+          ./scripts/build-apt-repo.sh debs/stable debs/testing site "$key"
+          rm -f "$key"
+
+      - uses: actions/upload-pages-artifact@v5
+        with:
+          path: site
+
+  deploy:
+    needs: build
+    runs-on: ubuntu-24.04
+    permissions:
+      pages: write
+      id-token: write
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - id: deployment
+        uses: actions/deploy-pages@v5

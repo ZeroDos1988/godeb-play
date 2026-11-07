@@ -1,0 +1,6 @@
+Types: deb
+URIs: https://zerodos1988.github.io/godeb-play
+Suites: trixie
+Components: main
+Architectures: amd64 arm64
+Signed-By: /usr/share/keyrings/godeb-play-archive-keyring.asc

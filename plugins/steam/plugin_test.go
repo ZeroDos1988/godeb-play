@@ -189,11 +189,11 @@ func TestAdoptServerFilesReportsBuild(t *testing.T) {
 
 func TestUfwArgsBehindHub(t *testing.T) {
 	g := enshrouded(t)
-	public := strings.Join(ufwArgs(g, wireguard.RoleInfo{}, "192.168.1.0/24", 15637), " ")
+	public := strings.Join(ufwArgs(g, wireguard.RoleInfo{}, "192.168.1.0/24", 15637, "udp"), " ")
 	if public != "allow from 192.168.1.0/24 to any port 15637 proto udp comment GoDeb Play Enshrouded" {
 		t.Fatalf("standalone: %s", public)
 	}
-	peer := strings.Join(ufwArgs(g, wireguard.RoleInfo{Role: wireguard.RolePeer, Hub: "203.0.113.7:51820"}, "", 15637), " ")
+	peer := strings.Join(ufwArgs(g, wireguard.RoleInfo{Role: wireguard.RolePeer, Hub: "203.0.113.7:51820"}, "", 15637, "udp"), " ")
 	if peer != "allow in on wg0 to any port 15637 proto udp comment GoDeb Play Enshrouded" {
 		t.Fatalf("behind hub: %s", peer)
 	}

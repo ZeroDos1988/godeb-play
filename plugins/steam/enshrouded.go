@@ -233,12 +233,12 @@ func validateGroups(v any) error {
 
 // enshroudedQuery is the configured queryPort, else the default.
 // enshroudedSaveDir is saveDirectory from the configuration (validated as
-// a relative path), ./savegame by default.
+// a relative path in the server directory), ./savegame by default.
 func enshroudedSaveDir(cfg map[string]any) string {
 	if dir, ok := cfg["saveDirectory"].(string); ok && safeRelative(dir) {
-		return dir
+		return path.Join(serverSub, dir)
 	}
-	return "./savegame"
+	return path.Join(serverSub, "savegame")
 }
 
 func enshroudedQuery(cfg map[string]any) int {

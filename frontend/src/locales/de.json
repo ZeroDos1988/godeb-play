@@ -793,7 +793,7 @@
     "logs": "Server-Log",
     "show": "Anzeigen",
     "hide": "Ausblenden",
-    "behindHub": "Dieser Server ist Standort des Hubs {{hub}}. Spieler verbinden sich mit {{hub}}:{{port}}. Dafür braucht der Hub in GoDeb eine Portweiterleitung für {{ports}}/udp an {{address}} (Plugin „Portweiterleitung“, Vorlage Enshrouded). Hier sind die Ports nur im Tunnel offen.",
+    "behindHub": "Dieser Server ist Standort des Hubs {{hub}}. Damit Spieler {{game}} über {{hub}} erreichen, braucht der Hub in GoDeb eine Portweiterleitung für {{ports}} an {{address}} (Plugin „Portweiterleitung“). Hier sind die Ports nur im Tunnel offen.",
     "title": "Spielserver",
     "description": "Spielserver installieren, aktualisieren und einstellen.",
     "installHint": "Installiert SteamCMD{{wine}}, lädt den Server (ca. {{size}} GB), legt Konfiguration und Dienst an und öffnet die UDP-Ports. Dauert je nach Leitung 5–20 Minuten. Der Server braucht etwa {{memory}} GB RAM.",
@@ -819,6 +819,17 @@
       "update": "Update",
       "backup": "Backup",
       "restore": "Wiederherstellung"
+    },
+    "note": {
+      "satisfactory": "Der erste Spieler, der sich verbindet, übernimmt den Server und setzt das Admin-Passwort. Das direkt nach der Installation erledigen (über den Tunnel oder im Heimnetz), bevor der Hub die Ports ins Internet weiterleitet."
     }
+  },
+  "valheim": {
+    "name": "Servername",
+    "world": "Welt",
+    "password": "Passwort (mindestens 5 Zeichen, ohne den Servernamen)",
+    "port": "Port (UDP, der nächste wird mitbenutzt)",
+    "public": "In der öffentlichen Serverliste zeigen",
+    "hint": "Name, Welt und Passwort gibt GoDeb Play über eine Datei an den Server, die nur root lesen kann. Welten liegen unter .config/unity3d/IronGate/Valheim und werden mit den Savegames gesichert."
   }
 }

@@ -793,7 +793,7 @@
     "logs": "Server log",
     "show": "Show",
     "hide": "Hide",
-    "behindHub": "This server is a site of hub {{hub}}. Players connect to {{hub}}:{{port}}. For that, the hub needs a port forwarding in GoDeb for {{ports}}/udp to {{address}} (plugin “Port forwarding”, template Enshrouded). Here the ports are open inside the tunnel only.",
+    "behindHub": "This server is a site of hub {{hub}}. For players to reach {{game}} through {{hub}}, the hub needs a port forwarding in GoDeb for {{ports}} to {{address}} (plugin “Port forwarding”). Here the ports are open inside the tunnel only.",
     "title": "Game servers",
     "description": "Install, update and configure game servers.",
     "installHint": "Installs SteamCMD{{wine}}, downloads the server (about {{size}} GB), creates config and service and opens the UDP ports. Takes 5–20 minutes depending on the connection. The server needs about {{memory}} GB RAM.",
@@ -819,6 +819,17 @@
       "update": "Update",
       "backup": "Backup",
       "restore": "Restore"
+    },
+    "note": {
+      "satisfactory": "The first player who connects claims the server and sets the admin password. Do that right after installing (through the tunnel or on the home network), before the hub forwards the ports to the internet."
     }
+  },
+  "valheim": {
+    "name": "Server name",
+    "world": "World",
+    "password": "Password (at least 5 characters, not containing the server name)",
+    "port": "Port (UDP, the next one is used as well)",
+    "public": "Show in the public server list",
+    "hint": "GoDeb Play passes name, world and password to the server through a file only root can read. Worlds live under .config/unity3d/IronGate/Valheim and are included in the savegame backups."
   }
 }

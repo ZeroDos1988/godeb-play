@@ -41,6 +41,19 @@ func renderUnit(g *Game) string {
 		"WorkingDirectory=" + g.serverDir(),
 		"Environment=HOME=" + base,
 	}
+	for _, kv := range g.UnitEnv {
+		lines = append(lines, "Environment="+kv)
+	}
+	if len(g.LibDirs) > 0 {
+		dirs := make([]string, len(g.LibDirs))
+		for i, d := range g.LibDirs {
+			dirs[i] = filepath.Join(g.serverDir(), d)
+		}
+		lines = append(lines, "Environment=LD_LIBRARY_PATH="+strings.Join(dirs, ":"))
+	}
+	if g.Settings != nil {
+		lines = append(lines, "EnvironmentFile="+g.settingsPath())
+	}
 	exec := g.executable()
 	if g.Platform == Windows {
 		lines = append(lines,
@@ -161,13 +174,20 @@ func install(ctx context.Context, g *Game, j *jobHandle) error {
 		if cfg, err = ensureConfig(g, r, uid, gid); err != nil {
 			return err
 		}
+		if err := writeSettings(g, cfg); err != nil {
+			return err
+		}
 	}
 	j.step("systemd-Dienst " + g.unit())
 	if err := writeUnit(ctx, g); err != nil {
 		return err
 	}
 	j.step("Firewall")
-	openFirewall(ctx, g, j, g.Ports(cfg))
+	var tcp []int
+	if g.TCPPorts != nil {
+		tcp = g.TCPPorts(cfg)
+	}
+	openFirewall(ctx, g, j, g.Ports(cfg), tcp)
 	j.step("Server starten")
 	if res := core.RunAdmin(ctx, "systemctl", "enable", "--now", g.unit()); res.Err != nil {
 		return fmt.Errorf("systemctl enable --now: %s", res.Detail())
@@ -432,24 +452,30 @@ func writeUnit(ctx context.Context, g *Game) error {
 	return nil
 }
 
-func openFirewall(ctx context.Context, g *Game, j *jobHandle, ports []int) {
+func openFirewall(ctx context.Context, g *Game, j *jobHandle, ports, tcp []int) {
 	if res := core.RunAdmin(ctx, "ufw", "status"); res.Err != nil {
-		j.logf("ufw nicht verfügbar, Ports selbst freigeben: %v", ports)
+		j.logf("ufw nicht verfügbar, Ports selbst freigeben: %v/udp %v/tcp", ports, tcp)
 		return
 	}
 	role, _ := wireguard.CurrentRole()
 	lan := lanPrefix(ctx)
 	if role.Role != wireguard.RolePeer && lan == "" {
-		j.logf("Kein Heimnetz erkannt und kein Tunnel: Ports bleiben zu. Selbst freigeben: %v/udp", ports)
+		j.logf("Kein Heimnetz erkannt und kein Tunnel: Ports bleiben zu. Selbst freigeben: %v/udp %v/tcp", ports, tcp)
 		return
 	}
-	for _, port := range ports {
-		args := ufwArgs(g, role, lan, port)
+	open := func(port int, proto string) {
+		args := ufwArgs(g, role, lan, port, proto)
 		if res := core.RunAdmin(ctx, "ufw", args...); res.Err != nil {
 			j.logf("ufw %s: %s", strings.Join(args, " "), res.Detail())
 		} else {
 			j.logf("ufw %s", strings.Join(args[:len(args)-2], " "))
 		}
+	}
+	for _, port := range ports {
+		open(port, "udp")
+	}
+	for _, port := range tcp {
+		open(port, "tcp")
 	}
 	if role.Role == wireguard.RolePeer {
 		j.logf("Dieser Server ist Standort des Hubs %s. Die Ports sind nur im Tunnel offen; öffentlich erreichbar werden sie über eine Portweiterleitung in GoDeb auf dem Hub an %s.", role.Hub, role.Address)
@@ -473,10 +499,10 @@ func lanPrefix(ctx context.Context) string {
 // ufwArgs opens a game port. Behind a GoDeb hub the players arrive through
 // the tunnel (port forwarding on the hub), so the port opens on wg0 only.
 // Without WireGuard it opens for the home network only, never for all.
-func ufwArgs(g *Game, role wireguard.RoleInfo, lan string, port int) []string {
+func ufwArgs(g *Game, role wireguard.RoleInfo, lan string, port int, proto string) []string {
 	comment := "GoDeb Play " + g.Name
 	if role.Role == wireguard.RolePeer {
-		return []string{"allow", "in", "on", "wg0", "to", "any", "port", strconv.Itoa(port), "proto", "udp", "comment", comment}
+		return []string{"allow", "in", "on", "wg0", "to", "any", "port", strconv.Itoa(port), "proto", proto, "comment", comment}
 	}
-	return []string{"allow", "from", lan, "to", "any", "port", strconv.Itoa(port), "proto", "udp", "comment", comment}
+	return []string{"allow", "from", lan, "to", "any", "port", strconv.Itoa(port), "proto", proto, "comment", comment}
 }

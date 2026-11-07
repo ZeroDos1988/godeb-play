@@ -69,7 +69,19 @@ Ohne Browser: `sudo godeb-play setup --join -` (Code einfügen) oder `--join DAT
 
 ## Spielserver (Plugin `steam`)
 
-Spiele sind Beschreibungen im Code (`plugins/steam/<spiel>.go`, `register(&Game{…})`): App-ID, Plattform (Linux oder Windows unter Wine), Startdatei, Ports, Konfigurationsdatei mit Vorgabe und Prüfung, Savegame-Verzeichnis, optional ein Formular (`ui/games/<Spiel>.tsx`). Enshrouded ist das erste (App 2278520, Windows-Server unter Wine, `enshrouded_server.json`, Ports `queryPort` und `queryPort-1` bzw. `gamePort`, UDP).
+Spiele sind Beschreibungen im Code (`plugins/steam/<spiel>.go`, `register(&Game{…})`): App-ID, Plattform (Linux oder Windows unter Wine), Startdatei und Argumente, UDP- und TCP-Ports, Konfigurationsdatei mit Vorgabe und Prüfung, Savegame-Verzeichnis (relativ zum Spielverzeichnis, das auch `HOME` ist), optional Bibliotheksverzeichnisse, feste Umgebungsvariablen, Einstellungen für die Kommandozeile und ein Formular (`ui/games/<Spiel>.tsx`). Hinweise pro Spiel stehen als `steam.note.<spiel>` in den Übersetzungen.
+
+| Spiel | App | Plattform | Ports | Einstellungen | Savegames |
+|---|---|---|---|---|---|
+| Enshrouded | 2278520 | Windows unter Wine | `queryPort` und `queryPort-1` bzw. `gamePort`, UDP | `enshrouded_server.json` (Formular) | `server/savegame` |
+| Valheim | 896660 | Linux | 2456–2457/udp (Port wählbar) | Name, Welt, Passwort, öffentlich (Formular) | `.config/unity3d/IronGate/Valheim` |
+| Satisfactory | 1690800 | Linux | 7777/udp, 7777/tcp, 8888/tcp | keine; der erste Spieler übernimmt den Server im Spiel | `.config/Epic/FactoryGame/Saved/SaveGames` |
+
+**Einstellungen auf der Kommandozeile** (Valheim): Der Server kennt keine Konfigurationsdatei, nur Argumente. GoDeb Play hält die Werte in `godeb-valheim.json` (Formular und Dateiansicht) und schreibt sie beim Speichern geprüft nach `/etc/godeb-play/games/<spiel>.env` (root, `0600`). Die Unit liest die Datei (`EnvironmentFile=`) und übergibt die Werte als `${NAME}`, jeweils als ein Argument, ohne Shell. Werte dürfen keine Anführungszeichen, Backslashes, `$`, `%`, `;` oder Steuerzeichen enthalten (`renderSettings`, Fuzz-Test `FuzzValheimSettings`). Was das Spielkonto in seiner eigenen JSON-Datei ändert, landet nie auf der Kommandozeile; nur gespeicherte, geprüfte Werte. Grenze: Wie bei jedem Programm mit Passwort-Argument sehen andere lokale Benutzer es per `ps`; im Container sind das nur die Spielkonten.
+
+**Satisfactory:** Der erste Spieler, der sich verbindet, übernimmt den Server und setzt das Admin-Passwort. Direkt nach der Installation über den Tunnel oder im Heimnetz erledigen, bevor der Hub die Ports ins Internet weiterleitet.
+
+**Noch nicht dabei:** Palworld (Einstellungen in einer INI-Datei mit einer sehr langen Zeile `OptionSettings=(…)`; braucht einen eigenen Editor und eine Prüfung statt des JSON-Formulars).
 
 **Installieren** (ein Klick, läuft als Job mit Log): APT-Pakete (`lib32gcc-s1`, bei Windows-Spielen `wine`), Systemkonto `steam-<spiel>`, SteamCMD, Serverdateien (`app_update … validate`, bis zu drei Versuche), Wine-Umgebung, Vorgabe-Konfiguration mit zufälligen Passwörtern, systemd-Unit `godeb-play-<spiel>.service`, Firewall, Start. Serverdateien, die schon im Verzeichnis liegen (z. B. kopiert), übernimmt SteamCMD und prüft sie nur. **Update** stoppt den Server, sichert das Savegame, aktualisiert und startet wieder.
 

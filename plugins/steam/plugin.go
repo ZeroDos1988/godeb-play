@@ -86,6 +86,7 @@ type statusResponse struct {
 	ServerDir  string `json:"serverDir"`
 	ConfigPath string `json:"configPath,omitempty"`
 	Ports      []int  `json:"ports"`
+	TCPPorts   []int  `json:"tcpPorts,omitempty"`
 	Job        *Job   `json:"job"`
 	// Hub is the public host of the GoDeb hub when this server is its peer;
 	// players then connect to the hub, which forwards the ports.
@@ -102,6 +103,7 @@ func handleStatus(w http.ResponseWriter, r *http.Request, g *Game) {
 		ServerDir:  g.serverDir(),
 		ConfigPath: g.configPath(),
 		Ports:      g.currentPorts(),
+		TCPPorts:   g.currentTCPPorts(),
 		Job:        jobs.snapshot(g.ID),
 	}
 	resp.Command = []string{"systemctl", "is-active", g.unit()}
@@ -230,6 +232,10 @@ func handlePutConfig(w http.ResponseWriter, r *http.Request, g *Game) {
 		content = append(content, '\n')
 	}
 	if err := writeConfig(g, content, uid, gid); err != nil {
+		core.WriteError(w, http.StatusBadGateway, err.Error())
+		return
+	}
+	if err := writeSettings(g, cfg); err != nil {
 		core.WriteError(w, http.StatusBadGateway, err.Error())
 		return
 	}

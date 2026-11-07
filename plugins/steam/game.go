@@ -49,15 +49,30 @@ type Game struct {
 	// QueryPort is the Steam query (A2S) port for player counts; nil when
 	// the game does not answer A2S.
 	QueryPort func(cfg map[string]any) int
-	// SaveDir returns the savegame directory relative to the server
-	// directory (cfg may be nil); nil when the game has no backups.
+	// TCPPorts are TCP ports to open in addition (nil for UDP-only games).
+	TCPPorts func(cfg map[string]any) []int
+	// SaveDir returns the savegame directory relative to the game's base
+	// directory, e.g. "server/savegame" or ".config/…" below HOME (cfg may
+	// be nil); nil when the game has no backups.
 	SaveDir func(cfg map[string]any) string
+	// LibDirs are directories below the server directory for
+	// LD_LIBRARY_PATH (Unity servers ship their own libraries).
+	LibDirs []string
+	// UnitEnv are fixed environment variables of the unit (KEY=value).
+	UnitEnv []string
+	// Settings turns a validated configuration into environment variables
+	// for the unit. The agent writes them to a root-only file in
+	// /etc/godeb-play/games, and Args refer to them as ${NAME}: settings
+	// such as a server password never pass through files the game owns.
+	Settings func(cfg map[string]any) (map[string]string, error)
 }
 
 var (
 	games       = map[string]*Game{}
 	gameID      = regexp.MustCompile(`^[a-z][a-z0-9]{1,15}$`)
 	packageName = regexp.MustCompile(`^[a-z0-9][a-z0-9+.-]{1,62}$`)
+	// unitEnvPattern: fixed variables in code, nothing that needs quoting.
+	unitEnvPattern = regexp.MustCompile(`^[A-Za-z_][A-Za-z0-9_]{0,63}=[A-Za-z0-9_./:-]{0,200}$`)
 )
 
 // register adds a game at init time. Invalid definitions are programming
@@ -78,6 +93,23 @@ func register(g *Game) {
 		panic("steam: no ports for " + g.ID)
 	case g.ConfigFile != "" && (g.DefaultConfig == nil || g.ValidateConfig == nil):
 		panic("steam: config file without default/validation for " + g.ID)
+	case g.Settings != nil && g.ConfigFile == "":
+		panic("steam: settings without config file for " + g.ID)
+	}
+	for _, kv := range g.UnitEnv {
+		if !unitEnvPattern.MatchString(kv) {
+			panic("steam: invalid unit environment " + kv)
+		}
+	}
+	for _, dir := range g.LibDirs {
+		if !safeRelative(dir) || strings.ContainsAny(dir, " \"") {
+			panic("steam: invalid library dir " + dir)
+		}
+	}
+	for _, a := range g.Args {
+		if strings.ContainsAny(a, "\n\"'\\%;") {
+			panic("steam: invalid argument " + a)
+		}
 	}
 	for _, p := range g.Packages {
 		if !packageName.MatchString(p) {
@@ -181,6 +213,14 @@ func (g *Game) currentConfig() map[string]any {
 // currentPorts reads the configuration if there is one.
 func (g *Game) currentPorts() []int {
 	return g.Ports(g.currentConfig())
+}
+
+// currentTCPPorts are the extra TCP ports, if the game has any.
+func (g *Game) currentTCPPorts() []int {
+	if g.TCPPorts == nil {
+		return nil
+	}
+	return g.TCPPorts(g.currentConfig())
 }
 
 func (g *Game) String() string { return fmt.Sprintf("%s (App %s)", g.Name, g.AppID) }

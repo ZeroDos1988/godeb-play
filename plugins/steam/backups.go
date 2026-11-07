@@ -11,7 +11,6 @@ import (
 	"path/filepath"
 	"regexp"
 	"sort"
-	"strings"
 	"time"
 
 	"godebplay/backend/core"
@@ -40,7 +39,7 @@ func (g *Game) saveName() string {
 	if !safeRelative(dir) {
 		return ""
 	}
-	return path.Join(serverSub, path.Clean(dir))
+	return path.Clean(dir)
 }
 
 // ensureBackupDir creates backups/<game>, root-only.
@@ -247,7 +246,7 @@ func handleBackups(w http.ResponseWriter, r *http.Request, g *Game) {
 	w.Header().Set("Cache-Control", "no-store")
 	core.WriteJSON(w, http.StatusOK, map[string]any{
 		"supported": g.SaveDir != nil,
-		"saveDir":   strings.TrimPrefix(g.saveName(), serverSub+"/"),
+		"saveDir":   g.saveName(),
 		"keep":      maxBackups,
 		"backups":   listBackups(g),
 	})

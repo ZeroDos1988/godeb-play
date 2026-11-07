@@ -42,6 +42,7 @@ type Status = CommandEnvelope &
     serverDir: string;
     configPath?: string;
     ports: number[];
+    tcpPorts?: number[];
     job: Job | null;
     hub?: string;
     tunnelAddress?: string;
@@ -168,7 +169,7 @@ function GameView({ id, onChanged }: { id: string; onChanged: () => void }) {
           hint={data.buildId ? `App ${data.appId} · Build ${data.buildId}` : `App ${data.appId}`}
         />
         <Stat label={t("steam.service")} value={data.service} ok={active} />
-        <Stat label={t("steam.ports")} value={data.ports.map((p) => `${p}/udp`).join(", ")} />
+        <Stat label={t("steam.ports")} value={[...data.ports.map((p) => `${p}/udp`), ...(data.tcpPorts ?? []).map((p) => `${p}/tcp`)].join(", ")} />
         <Stat label={t("steam.account")} value={data.user} hint={data.unit} />
       </div>
 
@@ -217,11 +218,14 @@ function GameView({ id, onChanged }: { id: string; onChanged: () => void }) {
         <p className="rounded-2xl border border-emerald-300/20 bg-emerald-400/5 px-3 py-2 text-sm text-white/80">
           {t("steam.behindHub", {
             hub: data.hub,
-            port: data.ports[data.ports.length - 1] ?? "",
-            ports: data.ports.join("–"),
+            ports: [...data.ports.map((p) => `${p}/udp`), ...(data.tcpPorts ?? []).map((p) => `${p}/tcp`)].join(", "),
             address: data.tunnelAddress ?? "",
+            game: data.name,
           })}
         </p>
+      ) : null}
+      {t(`steam.note.${id}`, { defaultValue: "" }) ? (
+        <p className="rounded-2xl border border-amber-300/20 bg-amber-400/5 px-3 py-2 text-sm text-white/80">{t(`steam.note.${id}`)}</p>
       ) : null}
       {!data.ready ? (
         <p className="text-xs text-muted">

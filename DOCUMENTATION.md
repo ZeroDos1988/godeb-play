@@ -61,6 +61,10 @@ Eine VM mit Debian 13 geht genauso (aus dem APT-Repo wie im README oder per `scp
 
 ### Ersteinrichtung
 
+**Am einfachsten mit dem Skript des Hubs:** Auf dem GoDeb-Hub `sudo godeb site add spiele --profile play` (oder Seite „Standorte“ → „+ GoDeb Play“). Das erzeugt `godeb-play-spiele.sh`. Auf den Container kopieren und `sudo sh godeb-play-spiele.sh` ausführen: Das Skript bindet das APT-Repo ein, installiert `godeb-play`, tritt dem Hub bei und fragt nur Benutzername und Passwort des Administrators (2FA beim ersten Login). Zugang und Firewall nehmen die Vorgaben (HTTPS im Heimnetz, ufw an). Das Profil `GoDeb-Profile: play` aus dem Beitrittscode prüft Play wie GoDeb (`plugins/wireguard/profile.go` ist eine Kopie) und behält es in `wg0.conf`. Das Skript enthält den privaten WireGuard-Schlüssel und löscht sich nach dem Lauf.
+
+Von Hand:
+
 1. Auf dem GoDeb-Hub einen Standort anlegen: WireGuard → „+ GoDeb-Server zu Hause“ oder `sudo godeb site add spiele`. Der Beitrittscode enthält den privaten Schlüssel des Standorts: nur hier einfügen, nicht per Chat oder Mail weitergeben.
 2. Die Installation zeigt den Link zur Einrichtung (Einmal-Token, HTTPS auf Port 8443 mit selbstsigniertem Zertifikat und Fingerabdruck); später erneut mit `sudo godeb-play setup-url`.
 3. Im Browser: Administrator, 2FA, „Mit Hub verbinden“ mit dem Beitrittscode, dann Zugang (Tunnel, Heimnetz per HTTPS oder lokal) und Firewall. Der Einrichtungsport schließt sich danach.

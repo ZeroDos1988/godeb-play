@@ -33,6 +33,8 @@ type RoleInfo struct {
 	Role    Role   `json:"role"`
 	Hub     string `json:"hub,omitempty"`
 	Address string `json:"address,omitempty"`
+	// Profile is what the hub set this peer up as (see SiteProfile).
+	Profile SiteProfile `json:"profile"`
 }
 
 // HubHost is the host part of the hub endpoint, i.e. the public address
@@ -58,7 +60,7 @@ func DetectRole(content string) RoleInfo {
 	if !peer {
 		return RoleInfo{Role: RoleHub}
 	}
-	info := RoleInfo{Role: RolePeer}
+	info := RoleInfo{Role: RolePeer, Profile: profileFrom(content)}
 	if len(cfg.Peers) > 0 {
 		info.Hub = cfg.Peers[0].Endpoint
 	}

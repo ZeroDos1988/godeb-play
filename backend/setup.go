@@ -143,6 +143,10 @@ func (s *setup) runPeer(ctx context.Context) error {
 	fmt.Fprintln(s.out, "Danach ist die Web-UI nur über den Tunnel und lokal erreichbar.")
 
 	s.step(1, "Administrator")
+	profiled := s.profiled()
+	if profiled && !s.opt.Yes {
+		s.opt.Admin = s.ask("Benutzername des Administrators", s.opt.Admin)
+	}
 	if err := s.admin(); err != nil {
 		return err
 	}
@@ -150,6 +154,12 @@ func (s *setup) runPeer(ctx context.Context) error {
 	s.step(2, "Tunnel zum Hub (wg0)")
 	if err := s.join(ctx); err != nil {
 		return err
+	}
+	// The setup script of the hub asks for the administrator only; the rest
+	// takes the defaults (HTTPS in the home network, ufw on).
+	if profiled {
+		fmt.Fprintln(s.out, "  Vom Hub als GoDeb Play angelegt. Die weiteren Schritte nehmen die Vorgaben.")
+		s.opt.Yes = true
 	}
 
 	s.step(3, "Firewall und Erreichbarkeit")
@@ -160,6 +170,15 @@ func (s *setup) runPeer(ctx context.Context) error {
 	fmt.Fprintf(s.out, "\nFertig. Web-UI dieses Servers: http://%s:%d\n", s.peer.Address, s.opt.UIPort)
 	fmt.Fprintln(s.out, "Vom Handy aus über den Hub erreichbar, wenn dieser Server dort als Standort angelegt ist (godeb site add).")
 	return nil
+}
+
+// profiled reports whether --join carries the GoDeb Play profile of a hub.
+func (s *setup) profiled() bool {
+	if s.opt.Join == "" || s.opt.Join == "-" {
+		return false
+	}
+	content, err := s.joinInput()
+	return err == nil && wireguard.JoinProfile(content).Kind == wireguard.ProfilePlay
 }
 
 // join writes wg0.conf from --join through wireguard.JoinHub, the same code

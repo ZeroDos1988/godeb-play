@@ -24,6 +24,7 @@ type joinConfig struct {
 	Endpoint     string
 	AllowedIPs   []netip.Prefix
 	Keepalive    int
+	Profile      SiteProfile
 }
 
 // JoinResult describes the written peer configuration.
@@ -42,6 +43,9 @@ func parseJoinConfig(content string) (joinConfig, []string, error) {
 	sections := map[string]int{}
 	for n, raw := range strings.Split(content, "\n") {
 		line := strings.TrimSpace(raw)
+		if readProfileComment(line, &jc.Profile) {
+			continue
+		}
 		if line == "" || strings.HasPrefix(line, "#") || strings.HasPrefix(line, ";") {
 			continue
 		}
@@ -120,6 +124,11 @@ func parseJoinConfig(content string) (joinConfig, []string, error) {
 			return jc, nil, fmt.Errorf("AllowedIPs %s: erlaubt ist nur das Tunnelnetz, das %s enthält (kein Volltunnel)", p, jc.Address)
 		}
 	}
+	profile, err := jc.Profile.Normalize()
+	if err != nil {
+		return jc, nil, fmt.Errorf("Profil des Standorts: %w", err)
+	}
+	jc.Profile = profile
 	if jc.Keepalive == 0 {
 		jc.Keepalive = 25
 		notes = append(notes, "PersistentKeepalive = 25 ergänzt, damit der Tunnel hinter NAT offen bleibt.")
@@ -154,6 +163,7 @@ func renderPeerConfig(jc joinConfig) string {
 	var b strings.Builder
 	fmt.Fprintf(&b, "# Managed by GoDeb. This host is a peer of the WireGuard hub %s.\n", jc.Endpoint)
 	fmt.Fprintf(&b, "# %s: %s\n", roleMarker, RolePeer)
+	b.WriteString(jc.Profile.comments())
 	b.WriteString("[Interface]\n")
 	fmt.Fprintf(&b, "PrivateKey = %s\n", jc.PrivateKey)
 	fmt.Fprintf(&b, "Address = %s/32\n", jc.Address)

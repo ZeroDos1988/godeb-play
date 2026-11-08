@@ -57,7 +57,7 @@ sudo pct push 130 godeb-play_<version>_amd64.deb /root/godeb-play.deb
 sudo pct exec 130 -- apt install -y --no-install-recommends /root/godeb-play.deb
 ```
 
-Eine VM mit Debian 13 geht genauso (Paket per `scp` und `sudo apt install ./godeb-play_*.deb`).
+Eine VM mit Debian 13 geht genauso (aus dem APT-Repo wie im README oder per `scp` und `sudo apt install ./godeb-play_*.deb`).
 
 ### Ersteinrichtung
 
@@ -202,7 +202,7 @@ Alle `/api`-Routen außer den oben genannten öffentlichen verlangen eine Sitzun
 - **Logs:** `journalctl -u godeb-play -u godeb-play-agent`, je Spiel `journalctl -u godeb-play-<spiel>`; fehlgeschlagene Anmeldungen in `/var/log/godeb-play/auth.log` (für fail2ban).
 - **Gesundheit:** `sudo godeb-play doctor` (nur lesend, ohne Geheimnisse), Übersicht der Einrichtung `sudo godeb-play summary`.
 - **Updates:** Plugin „Updates“ (APT) wie in GoDeb. Neue Versionen kommen als `.deb` aus den Releases.
-- **APT-Repo (vorbereitet, nicht freigeschaltet):** `scripts/build-apt-repo.sh` baut aus den Releases ein signiertes Repo mit den Suiten `trixie` (Releases) und `trixie-testing` (auch Vorabversionen), amd64 und arm64; `.github/workflows/apt-repo.yml` veröffentlicht es auf GitHub Pages (`https://zerodos1988.github.io/godeb-play`), läuft aber nur von Hand. Pages ist auch bei privatem Repo öffentlich. Öffentlicher Schlüssel: `package/apt/godeb-play-archive-keyring.asc` (Fingerprint `AC9E 656F 2DCE 6FFE 8E80 1C89 BDBE BCEE 6171 B3FB`, Signier-Unterschlüssel bis 07.11.2028, `security.yml` warnt 90 Tage vorher). Die geheimen Schlüssel liegen nur auf dem Entwicklungsrechner in `~/.config/godeb-play-apt` (`ci-signing.pgp` ohne geheimen Hauptschlüssel ist für die CI gedacht). Das Paket liefert noch keine `godeb-play.sources`; die kommt beim Freischalten dazu (Schritte im Fahrplan).
+- **APT-Repo:** `scripts/build-apt-repo.sh` baut aus den Releases ein signiertes Repo mit den Suiten `trixie` (Releases; vor dem ersten stabilen Release die Vorabversionen) und `trixie-testing` (auch Vorabversionen), amd64 und arm64. `.github/workflows/apt-repo.yml` veröffentlicht es auf GitHub Pages (`https://zerodos1988.github.io/godeb-play`), aufgerufen vom Release-Job in `ci.yml`, beim Hochstufen einer Vorabversion und von Hand. Das Paket bringt `/etc/apt/sources.list.d/godeb-play.sources` (conffile) und den Schlüssel in `/usr/share/keyrings/` mit. Öffentlicher Schlüssel: `package/apt/godeb-play-archive-keyring.asc` (Fingerprint `AC9E 656F 2DCE 6FFE 8E80 1C89 BDBE BCEE 6171 B3FB`, Signier-Unterschlüssel bis 07.11.2028, `security.yml` warnt 90 Tage vorher). Die geheimen Schlüssel liegen nur auf dem Entwicklungsrechner in `~/.config/godeb-play-apt` (`ci-signing.pgp` ohne geheimen Hauptschlüssel ist für die CI gedacht). Die CI braucht das Secret `APT_SIGNING_KEY` (Inhalt von `ci-signing.pgp`).
 - **Backups:** Den Container sichert Proxmox. Savegames zusätzlich in GoDeb Play (siehe oben), damit ein kaputtes Update ohne Rückspielen des ganzen Containers zu beheben ist.
 - **Entfernen:** `apt purge godeb-play` löscht `/etc/godeb-play`, `/var/lib/godeb-play`, `/var/log/godeb-play` und den Benutzer. Spielserver (Units `godeb-play-<spiel>.service` in `/etc/systemd/system`), Spielkonten und `/var/lib/godeb-play-games` (mit den Backups) bleiben bewusst; `/etc/wireguard/wg0.conf` bleibt.
 

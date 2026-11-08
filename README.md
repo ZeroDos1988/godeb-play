@@ -35,7 +35,16 @@ GoDeb Play hat eigene Namen, damit es nie mit GoDeb kollidiert: Programm `godeb-
 
 ## Installation (zum Testen)
 
-Noch kein APT-Repo. Paket bauen und im Container installieren (Befehle für einen Proxmox-Container in [DOCUMENTATION.md](DOCUMENTATION.md#container-unter-proxmox-vorschlag-noch-nicht-auf-echter-hardware-geprüft)):
+Aus dem APT-Repo (Debian 13, amd64 und arm64; Updates dann über das Plugin „Updates“ oder `apt upgrade`):
+
+```sh
+sudo wget -O /usr/share/keyrings/godeb-play-archive-keyring.asc https://zerodos1988.github.io/godeb-play/godeb-play-archive-keyring.asc
+sudo wget -O /etc/apt/sources.list.d/godeb-play.sources https://zerodos1988.github.io/godeb-play/godeb-play.sources
+sudo apt update
+sudo apt install --no-install-recommends godeb-play
+```
+
+Bis 1.0 gibt es nur Vorabversionen; die Suite `trixie` enthält sie, solange es kein stabiles Release gibt. Selbst bauen geht auch (Befehle für einen Proxmox-Container in [DOCUMENTATION.md](DOCUMENTATION.md#container-unter-proxmox-vorschlag-noch-nicht-auf-echter-hardware-geprüft)):
 
 ```sh
 scripts/build-deb.sh

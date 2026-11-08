@@ -64,7 +64,7 @@ GoDeb Play läuft als zwei Prozesse desselben Programms: die Weboberfläche (ohn
 
 ## Git: zeitnah committen und pushen (feste Regel)
 
-Ziel: GitHub (`origin`, `git@github.com:ZeroDos1988/godeb-play.git`, privat) ist immer nah am Arbeitsstand.
+Ziel: GitHub (`origin`, `git@github.com:ZeroDos1988/godeb-play.git`, öffentlich) ist immer nah am Arbeitsstand.
 
 - Nach jedem abgeschlossenen, getesteten Arbeitspaket sofort committen und pushen, ohne nachzufragen.
 - Vor jedem Commit: `go test ./...` und, wenn das Frontend betroffen ist, `cd frontend && npm run build`. Schlägt etwas fehl, wird nicht committet.

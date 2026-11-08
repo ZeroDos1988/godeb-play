@@ -131,7 +131,7 @@ fi
 if git ls-files | grep -E '\.(db|deb)$|master\.key|(^|/)\.dev/' >"$TMP/files"; then fail "verbotene Dateien versioniert"; detail <"$TMP/files"; else ok "keine *.db, *.deb, master.key, .dev/ im Repo"; fi
 
 if [ "$QUICK" = 0 ]; then
-	echo "== CI und Releases"
+	echo "== CI, Releases, APT-Repo"
 	if command -v gh >/dev/null 2>&1; then
 		gh run list --branch main -L 3 --json conclusion,displayTitle,workflowName --jq '.[] | "\(.conclusion)\t\(.workflowName)\t\(.displayTitle)"' >"$TMP/ci" 2>&1
 		if grep -q '^failure' "$TMP/ci"; then fail "CI auf main"; else ok "CI auf main"; fi
@@ -141,6 +141,13 @@ if [ "$QUICK" = 0 ]; then
 	else
 		warn "gh fehlt, CI nicht geprüft"
 	fi
+	base=https://zerodos1988.github.io/godeb-play
+	for p in godeb-play-archive-keyring.asc godeb-play.sources dists/trixie/InRelease; do
+		code=$(curl -s -o /dev/null -w '%{http_code}' "$base/$p")
+		[ "$code" = 200 ] || fail "APT-Repo $p: HTTP $code"
+	done
+	repo=$(curl -fsS "$base/dists/trixie/main/binary-amd64/Packages" 2>/dev/null | sed -n 's/^Version: //p' | sort -V | tail -1)
+	if [ -n "${latest:-}" ] && [ "v$repo" = "$latest" ]; then ok "APT-Repo liefert $repo"; else warn "APT-Repo liefert ${repo:-nichts}, letztes Release ${latest:-?}"; fi
 fi
 
 echo

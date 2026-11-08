@@ -1,13 +1,14 @@
 name: APT-Repo
 
 # Rebuilds the signed APT repository on GitHub Pages from all published
-# releases. Prepared, not switched on: it only runs by hand. GitHub Pages is
-# public even for a private repo, so every package would be downloadable.
-# Switching on (ROADMAP.md "Eigenes APT-Repo"): secret APT_SIGNING_KEY,
-# Pages with source "GitHub Actions", then add workflow_call and
-# release: types [released] here and call it from the release job in ci.yml.
+# releases. Called by the release job in ci.yml (new pre-release), run when
+# a pre-release is promoted to a release (trixie), and by hand to republish
+# (e.g. after deleting a release).
 on:
+  workflow_call:
   workflow_dispatch:
+  release:
+    types: [released]
 
 permissions:
   contents: read

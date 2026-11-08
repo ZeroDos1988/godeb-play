@@ -1,6 +1,5 @@
 #!/bin/sh
 # Builds the signed APT repository for GitHub Pages from released packages.
-# Prepared, not switched on: see ROADMAP.md "Eigenes APT-Repo".
 #
 #   scripts/build-apt-repo.sh <stable dir> <testing dir> <output dir> <signing key>
 #
@@ -114,11 +113,10 @@ index trixie stable
 index trixie-testing testing
 count=$(find "$OUT/$POOL" -name '*.deb' | wc -l)
 
-# Files for the manual setup. Once the repo is live, the package should ship
-# the same godeb-play.sources (as GoDeb does), so dpkg takes it over without
-# a conffile prompt.
+# Files for the manual setup; identical to the ones in the package, so dpkg
+# takes over godeb-play.sources without a conffile prompt.
 cp "$keyring" "$OUT/godeb-play-archive-keyring.asc"
-cp "$ROOT/package/apt/godeb-play.sources" "$OUT/godeb-play.sources"
+cp "$ROOT/package/debian/etc/apt/sources.list.d/godeb-play.sources" "$OUT/godeb-play.sources"
 sed 's/^Suites: trixie$/Suites: trixie-testing/' "$OUT/godeb-play.sources" >"$OUT/godeb-play-testing.sources"
 grep -q '^Suites: trixie-testing$' "$OUT/godeb-play-testing.sources"
 fingerprint=$(sed -n 's/^Comment: \([0-9A-F ]\{50\}\)$/\1/p' "$keyring")

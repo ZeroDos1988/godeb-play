@@ -95,5 +95,16 @@ jobs:
       - name: GitHub-Release
         env:
           GH_TOKEN: ${{ github.token }}
-        # Always a pre-release until GoDeb Play has run on a real server.
+        # Always a pre-release: it lands in trixie-testing only. Promoting
+        # it to a release (stable) rebuilds the repo via apt-repo.yml.
         run: gh release create "$GITHUB_REF_NAME" godeb-play_*.deb --repo "$GITHUB_REPOSITORY" --title "GoDeb Play $GITHUB_REF_NAME" --generate-notes --prerelease
+
+  # Puts the new release into the APT repo on GitHub Pages.
+  apt-repo:
+    needs: release
+    permissions:
+      contents: read
+      pages: write
+      id-token: write
+    uses: ./.github/workflows/apt-repo.yml
+    secrets: inherit

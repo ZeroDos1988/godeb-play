@@ -33,6 +33,9 @@ mkdir -p \
 	"$STAGE/usr/share/godeb-play/plugins" \
 	"$STAGE/usr/share/godeb-play/scripts"
 cp "$ROOT/scripts/setup-fail2ban.sh" "$STAGE/usr/share/godeb-play/scripts/setup-fail2ban.sh"
+# Key of the APT repo; DEBIAN/conffiles ships the matching godeb-play.sources.
+mkdir -p "$STAGE/usr/share/keyrings"
+cp "$ROOT/package/apt/godeb-play-archive-keyring.asc" "$STAGE/usr/share/keyrings/godeb-play-archive-keyring.asc"
 mkdir -p "$STAGE/usr/share/doc/godeb-play"
 cat >"$STAGE/usr/share/doc/godeb-play/copyright" <<'EOF'
 Format: https://www.debian.org/doc/packaging-manuals/copyright-format/1.0/
@@ -109,6 +112,8 @@ for want in \
 	"-rwxr-xr-x ./usr/share/godeb-play/scripts/setup-fail2ban.sh" \
 	"-rw-r--r-- ./usr/share/doc/godeb-play/copyright" \
 	"-rw-r--r-- ./etc/logrotate.d/godeb-play" \
+	"-rw-r--r-- ./etc/apt/sources.list.d/godeb-play.sources" \
+	"-rw-r--r-- ./usr/share/keyrings/godeb-play-archive-keyring.asc" \
 	"-rw-r--r-- ./etc/fail2ban/filter.d/godeb-play.conf" \
 	"-rw-r--r-- ./etc/fail2ban/jail.d/godeb-play.local"; do
 	if ! printf '%s\n' "$contents" | grep -qxF -- "$want"; then

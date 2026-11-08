@@ -1,1 +1,2 @@
 /etc/logrotate.d/godeb-play
+/etc/apt/sources.list.d/godeb-play.sources

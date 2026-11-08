@@ -6,7 +6,7 @@ Konzept (aus dem GoDeb-Fahrplan, 03.11.): Spielserver gehören nicht in GoDeb. G
 
 ## Phase 1 – Gerüst (07.11.)
 
-- [x] Repo `ZeroDos1988/godeb-play` (privat) mit dem Unterbau aus GoDeb `24f6000`: Weboberfläche ohne root, root-Agent mit eigener 2FA-Prüfung, Login mit TOTP, Sitzungen, Notfallbefehle, Ersteinrichtung mit Einmal-Token, Plugins Dienste (inkl. Server-Neustart), Firewall, Updates, Protokoll, WireGuard.
+- [x] Repo `ZeroDos1988/godeb-play` (seit 08.11. öffentlich) mit dem Unterbau aus GoDeb `24f6000`: Weboberfläche ohne root, root-Agent mit eigener 2FA-Prüfung, Login mit TOTP, Sitzungen, Notfallbefehle, Ersteinrichtung mit Einmal-Token, Plugins Dienste (inkl. Server-Neustart), Firewall, Updates, Protokoll, WireGuard.
 - [x] Eigene Namen: Programm `godeb-play`, Dienste `godeb-play(-agent).service`, Benutzer `godeb-play`, Pfade `/etc/godeb-play`, `/var/lib/godeb-play`, Go-Modul `godebplay`. Paket `godeb-play` ohne GoDebs APT-Quelle.
 - [x] Assistent in vier Schritten: Administrator, 2FA, Beitritt zum Hub per Beitrittscode (oder ohne WireGuard zum Ausprobieren), Zugang und Firewall. Ohne Browser: `godeb-play setup --join -`.
 - [ ] **(Nutzer) Erster Test im Container:** LXC mit Debian 13 unter Proxmox (Befehle in `DOCUMENTATION.md` „Container unter Proxmox“), auf dem Hub `sudo godeb site add spiele`, Beitrittscode im Assistenten, Oberfläche über den Tunnel öffnen, Neustart des Containers (Tunnel und Spielserver kommen wieder).
@@ -38,17 +38,18 @@ Konzept (aus dem GoDeb-Fahrplan, 03.11.): Spielserver gehören nicht in GoDeb. G
 - [ ] **(nach GoDeb 1.0) Gemeinsames Go-Modul mit GoDeb:** `auth`, `agent`, `core`, `db`, `firstrun`, `state`, Teile von `wireguard`, statt Kopien. Bis dahin Sicherheitsfixes am Unterbau in beiden Repos.
 - [x] **Weitere Spiele** (07.11.): Valheim und Satisfactory, je mit Prüfung und Tests. Weitere (z. B. Palworld) nach demselben Muster.
 - [ ] **(Nutzer) Valheim und Satisfactory** einmal auf echter Hardware starten: Ports, App-IDs und Startparameter stammen aus den Herstelleranleitungen.
-- [x] **Eigenes APT-Repo vorbereitet** (07.11.): eigener Signierschlüssel (`~/.config/godeb-play-apt`), `scripts/build-apt-repo.sh`, Workflow `apt-repo.yml` (nur von Hand), Prüfung des Schlüsselablaufs in `security.yml`. Lokal mit echtem `apt-get update` geprüft.
-- [ ] **(Nutzer, wenn GoDeb Play öffentlich sein darf) APT-Repo freischalten:** (1) Secret `APT_SIGNING_KEY` mit dem Inhalt von `~/.config/godeb-play-apt/ci-signing.pgp` setzen (`gh secret set APT_SIGNING_KEY --repo ZeroDos1988/godeb-play < ~/.config/godeb-play-apt/ci-signing.pgp`). (2) Pages mit Quelle „GitHub Actions“ einschalten; bei privatem Repo braucht das GitHub Pro. (3) In `apt-repo.yml` `workflow_call` und `release: types [released]` ergänzen, im Release-Job von `ci.yml` aufrufen. (4) `package/apt/godeb-play.sources` ins Paket nach `/etc/apt/sources.list.d/` und den Schlüssel nach `/usr/share/keyrings/` (wie GoDeb), `conffiles` ergänzen. (5) Diagnose um die Pages-Prüfung erweitern.
+- [x] **Eigenes APT-Repo vorbereitet** (07.11.): eigener Signierschlüssel (`~/.config/godeb-play-apt`), `scripts/build-apt-repo.sh`, Workflow `apt-repo.yml`, Prüfung des Schlüsselablaufs in `security.yml`. Lokal mit echtem `apt-get update` geprüft.
+- [x] **APT-Repo eingebunden** (08.11.): Release-Job ruft `apt-repo.yml` auf, Paket bringt `godeb-play.sources` und Schlüssel mit, Diagnose prüft Pages.
+- [ ] **(Nutzer) APT-Repo live schalten:** Repo öffentlich, Secret `APT_SIGNING_KEY` setzen, Pages mit Quelle „GitHub Actions“, dann erstes Release (Tag `v…`).
 - [x] **Aufräumen im WireGuard-Paket** (07.11.): Hub- und Client-Teile (`clients.go`, `hub.go`, `cidr.go`) und die Standort-Abfrage der Überwachung entfernt; die WireGuard-Seite liest nur noch `wg0.conf` und `wg show`.
 
 ## Entscheidungen
 
 - **Name GoDeb Play** (04.11.).
-- **Eigenes, privates Repo** (07.11.): `ZeroDos1988/godeb-play`, vorerst nicht öffentlich.
+- **Eigenes Repo** (07.11.): `ZeroDos1988/godeb-play`, zuerst privat, seit 08.11. öffentlich, damit das APT-Repo auf GitHub Pages ohne bezahltes Konto geht.
 - **Unterbau kopieren, später teilen** (07.11.): Die Pakete aus GoDeb sind kopiert, damit GoDeb im Feature-Freeze vor 1.0 unberührt bleibt. Nach GoDeb 1.0 wandert das Gemeinsame in ein Go-Modul. Bis dahin Sicherheitsfixes am Unterbau in beiden Repos.
 - **Nur Standort, nie Hub** (07.11.): GoDeb Play tritt einem GoDeb-Hub bei oder läuft ohne WireGuard; Hub, Portweiterleitung und Mail bleiben in GoDeb.
 - **Eigene Namen** (07.11.): Programm, Dienste, Benutzer und Pfade heißen `godeb-play…`, damit beide Pakete nie kollidieren. Umgebungsvariablen (`GODEB_*`) und Cookie-Namen bleiben gleich.
-- **APT-Repo vorbereiten, nicht freischalten** (07.11.): Pages ist immer öffentlich und widerspräche „vorerst nicht öffentlich“.
+- **APT-Repo wie bei GoDeb** (08.11.): erst nur vorbereitet, weil Pages immer öffentlich ist; mit dem öffentlichen Repo freigeschaltet.
 - **Kein Trusted Endpoint, kein Fernzugang** (07.11.): Beides gibt es in GoDeb; im Container zu Hause wären es nur zusätzliche Angriffsflächen.
 - **Savegame-Backups trotz „Backups macht die Plattform“** (07.11.): Proxmox sichert den Container; Savegames zusätzlich, weil ein kaputtes Spiel-Update sonst nur durch Zurückspielen des ganzen Containers zu beheben wäre.

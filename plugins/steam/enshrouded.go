@@ -19,12 +19,14 @@ const enshroudedQueryPort = 15637
 
 func init() {
 	register(&Game{
-		ID:             "enshrouded",
-		Name:           "Enshrouded",
-		AppID:          "2278520",
-		Platform:       Windows,
-		Executable:     "enshrouded_server.exe",
-		Packages:       []string{"wine"},
+		ID:         "enshrouded",
+		Name:       "Enshrouded",
+		AppID:      "2278520",
+		Platform:   Proton,
+		Executable: "enshrouded_server.exe",
+		// GE-Proton brings its own Wine; it needs Python for its launcher
+		// and loads FreeType and GnuTLS from the host.
+		Packages:       []string{"python3", "libfreetype6", "libgnutls30t64"},
 		StopSignal:     "SIGINT",
 		DownloadGB:     8,
 		MemoryGB:       8,

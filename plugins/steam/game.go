@@ -14,10 +14,12 @@ import (
 	"strings"
 )
 
-// Platform of the server binary. Windows servers run under Wine.
+// Platform of the server binary. Windows servers run under Debian's Wine
+// or under GE-Proton (proton.go), which many Windows servers need.
 const (
 	Linux   = "linux"
 	Windows = "windows"
+	Proton  = "proton"
 )
 
 // Game describes one dedicated server. All fields are constants in code;
@@ -26,7 +28,7 @@ type Game struct {
 	ID       string // URL segment, account and unit suffix: [a-z][a-z0-9]{1,15}
 	Name     string
 	AppID    string // Steam app ID of the dedicated server
-	Platform string // Linux or Windows
+	Platform string // Linux, Windows (Wine) or Proton (GE-Proton)
 	// Executable is the server binary relative to the server directory.
 	Executable string
 	Args       []string
@@ -85,7 +87,7 @@ func register(g *Game) {
 		panic("steam: duplicate game " + g.ID)
 	case g.AppID == "" || strings.Trim(g.AppID, "0123456789") != "":
 		panic("steam: invalid app ID for " + g.ID)
-	case g.Platform != Linux && g.Platform != Windows:
+	case g.Platform != Linux && g.Platform != Windows && g.Platform != Proton:
 		panic("steam: invalid platform for " + g.ID)
 	case g.Executable == "" || filepath.IsAbs(g.Executable) || strings.Contains(g.Executable, ".."):
 		panic("steam: invalid executable for " + g.ID)
@@ -154,6 +156,9 @@ func (g *Game) serverDir() string   { return filepath.Join(g.baseDir(), "server"
 func (g *Game) steamcmdDir() string { return filepath.Join(g.baseDir(), "steamcmd") }
 func (g *Game) winePrefix() string  { return filepath.Join(g.baseDir(), "wine") }
 func (g *Game) executable() string  { return filepath.Join(g.serverDir(), g.Executable) }
+
+// windowsBinary reports whether SteamCMD must fetch the Windows build.
+func (g *Game) windowsBinary() bool { return g.Platform == Windows || g.Platform == Proton }
 
 // user is the game's own service account, so one compromised server cannot
 // touch another game's files.

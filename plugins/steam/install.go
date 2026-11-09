@@ -63,6 +63,12 @@ func renderUnit(g *Game) string {
 		)
 		exec = "/usr/bin/wine " + exec
 	}
+	if g.Platform == Proton {
+		for _, kv := range g.protonEnv() {
+			lines = append(lines, "Environment="+kv)
+		}
+		exec = filepath.Join(protonDir(), "proton") + " run " + exec
+	}
 	if len(g.Args) > 0 {
 		exec += " " + strings.Join(g.Args, " ")
 	}
@@ -116,7 +122,7 @@ func requireAmd64() error {
 }
 
 // install sets up a game with one click: APT packages, the service account,
-// SteamCMD, the server files, a Wine prefix for Windows servers, a default
+// SteamCMD, GE-Proton or a Wine prefix for Windows servers, the server files, a default
 // configuration, the systemd unit and the firewall.
 func install(ctx context.Context, g *Game, j *jobHandle) error {
 	if err := requireRoot(); err != nil {
@@ -143,8 +149,11 @@ func install(ctx context.Context, g *Game, j *jobHandle) error {
 	}
 	defer r.Close()
 	subdirs := []string{serverSub, steamcmdSub}
-	if g.Platform == Windows {
+	switch g.Platform {
+	case Windows:
 		subdirs = append(subdirs, wineSub)
+	case Proton:
+		subdirs = append(subdirs, compatSub)
 	}
 	if err := ensureSubdirs(r, uid, gid, subdirs...); err != nil {
 		return err
@@ -152,6 +161,12 @@ func install(ctx context.Context, g *Game, j *jobHandle) error {
 	j.step("SteamCMD")
 	if err := ensureSteamCMD(ctx, g, j, r, uid, gid); err != nil {
 		return err
+	}
+	if g.Platform == Proton {
+		j.step(protonVersion)
+		if err := ensureProton(ctx, j); err != nil {
+			return err
+		}
 	}
 	j.step("Serverdateien (App " + g.AppID + ")")
 	if err := adoptServerFiles(g, j, r, uid, gid); err != nil {
@@ -230,6 +245,20 @@ func update(ctx context.Context, g *Game, j *jobHandle) error {
 	}
 	if err := steamUpdate(ctx, g, j); err != nil {
 		return err
+	}
+	if g.Platform == Proton {
+		// A new pinned release arrives with an update of GoDeb Play; a
+		// game installed under Wine before gets Proton's packages and prefix.
+		j.step(protonVersion)
+		if err := ensurePackages(ctx, g, j); err != nil {
+			return err
+		}
+		if err := ensureSubdirs(r, uid, gid, compatSub); err != nil {
+			return err
+		}
+		if err := ensureProton(ctx, j); err != nil {
+			return err
+		}
 	}
 	if err := writeUnit(ctx, g); err != nil {
 		return err
@@ -381,7 +410,7 @@ const steamAttempts = 3
 // steamArgs is the SteamCMD command line for a game.
 func steamArgs(g *Game) []string {
 	args := []string{filepath.Join(g.steamcmdDir(), "steamcmd.sh")}
-	if g.Platform == Windows {
+	if g.windowsBinary() {
 		args = append(args, "+@sSteamCmdForcePlatformType", "windows")
 	}
 	return append(args,

@@ -30,6 +30,7 @@ const (
 	serverSub   = "server"
 	steamcmdSub = "steamcmd"
 	wineSub     = "wine"
+	compatSub   = "proton"
 )
 
 func (g *Game) configName() string { return path.Join(serverSub, g.ConfigFile) }

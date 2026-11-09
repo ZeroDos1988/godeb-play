@@ -11,11 +11,11 @@ Spieler --> VPS (GoDeb-Hub, öffentliche IP) --DNAT/SNAT--> WireGuard --> GoDeb 
                                                                           + Spielserver
 ```
 
-> **Stand (07.11.2026):** Vorabversion, noch nicht auf echter Hardware getestet. Einrichtung, Login mit 2FA, Agent, Beitritt zum Hub und Enshrouded (SteamCMD unter Wine) mit Savegame-Backups sind umgesetzt. Siehe [ROADMAP.md](ROADMAP.md).
+> **Stand (07.11.2026):** Vorabversion, noch nicht auf echter Hardware getestet. Einrichtung, Login mit 2FA, Agent, Beitritt zum Hub und Enshrouded (SteamCMD, unter GE-Proton) mit Savegame-Backups sind umgesetzt. Siehe [ROADMAP.md](ROADMAP.md).
 
 ## Spielserver
 
-- **Ein Klick zum Server:** SteamCMD, Serverdateien, Wine für Windows-Server, Vorgabe-Konfiguration mit Formular, systemd-Unit, Firewall. Enshrouded ist das erste Spiel; weitere brauchen nur eine Beschreibung im Code.
+- **Ein Klick zum Server:** SteamCMD, Serverdateien, GE-Proton (oder Wine) für Windows-Server, Vorgabe-Konfiguration mit Formular, systemd-Unit, Firewall. Enshrouded ist das erste Spiel; weitere brauchen nur eine Beschreibung im Code.
 - **Jedes Spiel eigenes Konto und Sandbox**, nie root. Der root-Agent greift auf Spielverzeichnisse nur über `os.Root` zu, damit ein übernommener Spielserver ihn nicht per Symlink nach draußen lenken kann.
 - **Savegames gesichert** vor jedem Update, auf Knopfdruck und vor jeder Wiederherstellung; Wiederherstellen mit einem Klick.
 - **Spielerzahlen** per Steam-Query, sichtbar hier und auf dem GoDeb-Hub.

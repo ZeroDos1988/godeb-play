@@ -1,6 +1,6 @@
 # Fahrplan GoDeb Play
 
-Stand: 07.11.2026. Reihenfolge = Priorität. `[x]` erledigt, `[ ]` offen. Offene Punkte tragen, wer oder was sie erledigt: **(Nutzer)** nur mit echter Hardware bzw. beim Nutzer, **(nach GoDeb 1.0)** wartet auf das Ende des Feature-Freeze in GoDeb, **(später)** erst wenn es sich lohnt. Neue Ideen kommen hierher, Entscheidungen unten.
+Stand: 09.11.2026. Reihenfolge = Priorität. `[x]` erledigt, `[ ]` offen. Offene Punkte tragen, wer oder was sie erledigt: **(Nutzer)** nur mit echter Hardware bzw. beim Nutzer, **(nach GoDeb 1.0)** wartet auf das Ende des Feature-Freeze in GoDeb, **(später)** erst wenn es sich lohnt. Neue Ideen kommen hierher, Entscheidungen unten.
 
 Konzept (aus dem GoDeb-Fahrplan, 03.11.): Spielserver gehören nicht in GoDeb. GoDeb Play ist ein eigenes, kleines Panel nur für Spielserver, gedacht für einen Container oder eine VM auf dem Heimserver (Proxmox). Es fühlt sich an wie GoDeb (Einrichtung, Login, Optik) und hängt sich wie die Heim-VM als Standort an den GoDeb-Hub.
 
@@ -28,7 +28,8 @@ Konzept (aus dem GoDeb-Fahrplan, 03.11.): Spielserver gehören nicht in GoDeb. G
 - [x] Firewall: als Standort nur `wg0`, ohne WireGuard nur das Heimnetz (vorher öffentlich).
 - [x] Spieler und Status per Steam-Query (A2S), Messwerte für den Hub; Hinweis auf die nötige Portweiterleitung im Hub.
 - [x] Installieren, Update und Wiederherstellen mit Passwort und frischem Code; Fuzz-Test für die Enshrouded-Konfiguration.
-- [ ] **(Nutzer) Wine unter Debian 13:** Läuft `enshrouded_server.exe` ohne X-Server? Falls nicht, `xvfb-run` als Option im Unit-Template (dann `Xvfb bool` in `Game`, Paket `xvfb`).
+- [x] **GE-Proton statt Wine für Enshrouded** (09.11.): festgelegte Version mit geprüfter SHA-256, root-eigen und für alle Spiele gemeinsam, Präfix pro Spiel; Wine aus Debian bleibt als Plattform für andere Spiele. Entpacken des echten Archivs geprüft (identisch zu `tar`).
+- [ ] **(Nutzer) GE-Proton unter Debian 13:** Startet `enshrouded_server.exe` mit `proton run` ohne X-Server und mit den Paketen `python3`, `libfreetype6`, `libgnutls30t64`? Falls ein X-Server nötig ist: `xvfb-run` als Option im Unit-Template (Paket `xvfb`). Fehlende Bibliotheken stehen im Server-Log.
 - [ ] **(Nutzer) Enshrouded-Ports:** Neuere Serverversionen kennen nur `queryPort`. GoDeb Play öffnet zusätzlich `queryPort-1`, solange kein `gamePort` gesetzt ist; nach dem Test ggf. entfernen.
 - [ ] **(Nutzer) Backup und Wiederherstellen** einmal mit einem echten Savegame ausprobieren.
 

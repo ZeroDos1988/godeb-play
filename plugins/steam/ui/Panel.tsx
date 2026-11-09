@@ -25,7 +25,7 @@ type GameInfo = {
   id: string;
   name: string;
   appId: string;
-  platform: "linux" | "windows";
+  platform: "linux" | "windows" | "proton";
   downloadGb: number;
   memoryGb: number;
   hasConfig: boolean;
@@ -231,7 +231,7 @@ function GameView({ id, onChanged }: { id: string; onChanged: () => void }) {
         <p className="text-xs text-muted">
           {data.installed
             ? t("steam.installHintSeeded")
-            : t("steam.installHint", { wine: data.platform === "windows" ? t("steam.wine") : "", size: data.downloadGb, memory: data.memoryGb })}
+            : t("steam.installHint", { wine: data.platform === "windows" ? t("steam.wine") : data.platform === "proton" ? t("steam.proton") : "", size: data.downloadGb, memory: data.memoryGb })}
         </p>
       ) : null}
       {error ? <p className="text-sm text-debian">{error}</p> : null}

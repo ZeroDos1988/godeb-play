@@ -789,6 +789,7 @@
     "description": "Install, update and configure game servers.",
     "installHint": "Installs SteamCMD{{wine}}, downloads the server (about {{size}} GB), creates config and service and opens the UDP ports. Takes 5–20 minutes depending on the connection. The server needs about {{memory}} GB RAM.",
     "wine": " and Wine",
+    "proton": " and GE-Proton (about 0.6 GB)",
     "account": "Account and service",
     "noGames": "No games registered.",
     "games": "Games",

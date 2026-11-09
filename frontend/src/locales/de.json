@@ -789,6 +789,7 @@
     "description": "Spielserver installieren, aktualisieren und einstellen.",
     "installHint": "Installiert SteamCMD{{wine}}, lädt den Server (ca. {{size}} GB), legt Konfiguration und Dienst an und öffnet die UDP-Ports. Dauert je nach Leitung 5–20 Minuten. Der Server braucht etwa {{memory}} GB RAM.",
     "wine": " und Wine",
+    "proton": " und GE-Proton (ca. 0,6 GB)",
     "account": "Konto und Dienst",
     "noGames": "Keine Spiele registriert.",
     "games": "Spiele",

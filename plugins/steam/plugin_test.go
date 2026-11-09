@@ -112,12 +112,37 @@ func TestUnitIsSandboxed(t *testing.T) {
 	for _, want := range []string{
 		"User=steam-enshrouded", "ProtectSystem=strict", "ReadWritePaths=/var/lib/godeb-play-games/enshrouded",
 		"NoNewPrivileges=yes", "CapabilityBoundingSet=", "KillSignal=SIGINT",
-		"ExecStart=/usr/bin/wine /var/lib/godeb-play-games/enshrouded/server/enshrouded_server.exe",
-		"Environment=WINEPREFIX=/var/lib/godeb-play-games/enshrouded/wine",
+		"ExecStart=/var/lib/godeb-play-games/proton-ge/" + protonVersion + "/proton run /var/lib/godeb-play-games/enshrouded/server/enshrouded_server.exe",
+		"Environment=STEAM_COMPAT_DATA_PATH=/var/lib/godeb-play-games/enshrouded/proton",
+		"Environment=STEAM_COMPAT_CLIENT_INSTALL_PATH=/var/lib/godeb-play-games/enshrouded/steamcmd",
+		"Environment=PROTONFIXES_DISABLE=1",
 	} {
 		if !strings.Contains(unit, want) {
 			t.Errorf("unit misses %q", want)
 		}
+	}
+	// Proton itself is shared and root-owned: the unit must not make it writable.
+	if strings.Contains(unit, "ReadWritePaths=/var/lib/godeb-play-games/proton-ge") || strings.Contains(unit, "wine") {
+		t.Errorf("unexpected runtime lines in unit:\n%s", unit)
+	}
+}
+
+func TestWineUnit(t *testing.T) {
+	g := &Game{ID: "testwine", Name: "Test", AppID: "1", Platform: Windows, Executable: "srv.exe", StopSignal: "SIGINT", Ports: func(map[string]any) []int { return nil }}
+	unit := renderUnit(g)
+	for _, want := range []string{
+		"ExecStart=/usr/bin/wine /var/lib/godeb-play-games/testwine/server/srv.exe",
+		"Environment=WINEPREFIX=/var/lib/godeb-play-games/testwine/wine",
+	} {
+		if !strings.Contains(unit, want) {
+			t.Errorf("unit misses %q", want)
+		}
+	}
+	if strings.Contains(unit, "proton") {
+		t.Error("Wine unit mentions Proton")
+	}
+	if !strings.Contains(strings.Join(steamArgs(g), " "), "ForcePlatformType windows") {
+		t.Error("Wine servers need the Windows build")
 	}
 }
 

@@ -789,7 +789,6 @@
     "description": "Install, update and configure game servers.",
     "installHint": "Installs SteamCMD{{wine}}, downloads the server (about {{size}} GB), creates config and service and opens the UDP ports. Takes 5–20 minutes depending on the connection. The server needs about {{memory}} GB RAM.",
     "wine": " and Wine",
-    "proton": " and GE-Proton (about 0.6 GB)",
     "account": "Account and service",
     "noGames": "No games registered.",
     "games": "Games",
@@ -810,10 +809,31 @@
       "install": "Install",
       "update": "Update",
       "backup": "Backup",
-      "restore": "Restore"
+      "restore": "Restore",
+      "proton": "GE-Proton"
     },
     "note": {
       "satisfactory": "The first player who connects claims the server and sets the admin password. Do that right after installing (through the tunnel or on the home network), before the hub forwards the ports to the internet."
+    },
+    "protonInstall": " and GE-Proton (about 0.6 GB)",
+    "proton": {
+      "title": "GE-Proton",
+      "current": "This game runs on {{version}}.",
+      "check": "Check for updates",
+      "newer": "Newer release on GitHub: {{version}} ({{date}}).",
+      "upToDate": "No newer release (checked {{date}}).",
+      "install": "Download and use",
+      "use": "Use",
+      "delete": "Delete",
+      "all": "All releases on GitHub",
+      "pinned": "verified by GoDeb Play",
+      "unpinned": "downloaded from GitHub",
+      "usedBy": "used by {{games}}",
+      "unused": "unused",
+      "confirmDownload": "Download {{version}} from GitHub and use it for this game? It is only checked against the checksum of the same release, not one shipped with GoDeb Play. The server stops briefly; the savegame is backed up first.",
+      "confirmUse": "Switch this game to {{version}}? The server stops briefly; the savegame is backed up first.",
+      "confirmDelete": "Delete {{version}} (about 1.5 GB)? It can be downloaded again later.",
+      "hint": "GoDeb Play ships {{pinned}} with a built-in checksum. Newer releases come from GitHub and need your password and a 2FA code. If a release misbehaves, switch back; the savegame backup from the switch is listed under savegames."
     }
   },
   "valheim": {

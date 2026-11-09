@@ -49,6 +49,13 @@ func (r *jobRunner) snapshot(game string) *Job {
 	return &cp
 }
 
+// busy reports whether any job runs.
+func (r *jobRunner) busy() bool {
+	r.mu.Lock()
+	defer r.mu.Unlock()
+	return r.job != nil && r.job.Running
+}
+
 // start runs fn in the background unless another job is running. The job
 // outlives the HTTP request; it ends when fn returns or the daemon stops.
 func (r *jobRunner) start(game, action string, fn func(ctx context.Context, j *jobHandle) error) error {

@@ -5,6 +5,7 @@ import { api } from "@/lib/api.ts";
 import type { CommandEnvelope } from "@/lib/types.ts";
 import { useGet } from "@/lib/useAsync.ts";
 import { Backups } from "./Backups.tsx";
+import { Proton } from "./Proton.tsx";
 import { ConfigEditor } from "./ConfigEditor.tsx";
 import { forms } from "./games/index.ts";
 import { button, card, primary, Stat } from "./parts.tsx";
@@ -46,6 +47,7 @@ type Status = CommandEnvelope &
     job: Job | null;
     hub?: string;
     tunnelAddress?: string;
+    proton?: string;
   };
 
 export default function Panel() {
@@ -231,7 +233,7 @@ function GameView({ id, onChanged }: { id: string; onChanged: () => void }) {
         <p className="text-xs text-muted">
           {data.installed
             ? t("steam.installHintSeeded")
-            : t("steam.installHint", { wine: data.platform === "windows" ? t("steam.wine") : data.platform === "proton" ? t("steam.proton") : "", size: data.downloadGb, memory: data.memoryGb })}
+            : t("steam.installHint", { wine: data.platform === "windows" ? t("steam.wine") : data.platform === "proton" ? t("steam.protonInstall") : "", size: data.downloadGb, memory: data.memoryGb })}
         </p>
       ) : null}
       {error ? <p className="text-sm text-debian">{error}</p> : null}
@@ -240,6 +242,9 @@ function GameView({ id, onChanged }: { id: string; onChanged: () => void }) {
 
       {data.ready ? (
         <Backups base={base} jobRunning={running} refreshKey={job?.finished ? 1 : 0} onStarted={(j) => setJob(j as Job)} />
+      ) : null}
+      {data.ready && data.platform === "proton" && data.proton ? (
+        <Proton game={id} current={data.proton} jobRunning={running} onStarted={(j) => setJob(j as Job)} />
       ) : null}
       {data.hasConfig ? <ConfigEditor base={base} Form={forms[id]} onSaved={status.reload} serverActive={active} /> : null}
       {data.installed ? <Logs base={base} /> : null}

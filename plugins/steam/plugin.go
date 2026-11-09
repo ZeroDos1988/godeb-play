@@ -34,6 +34,10 @@ func Mount(mux *http.ServeMux) {
 	mux.HandleFunc("GET /api/plugins/steam/games/{game}/backups", withGame(handleBackups))
 	mux.HandleFunc("POST /api/plugins/steam/games/{game}/backups", withGame(handleStartJob("backup", manualBackup)))
 	mux.HandleFunc("POST /api/plugins/steam/games/{game}/backups/{name}/restore", withGame(handleRestore))
+	mux.HandleFunc("POST /api/plugins/steam/games/{game}/proton", withGame(handleUseProton))
+	mux.HandleFunc("GET /api/plugins/steam/proton", handleProton)
+	mux.HandleFunc("GET /api/plugins/steam/proton/releases", handleProtonReleases)
+	mux.HandleFunc("POST /api/plugins/steam/proton/delete", handleDeleteProton)
 }
 
 func withGame(fn func(http.ResponseWriter, *http.Request, *Game)) http.HandlerFunc {
@@ -92,6 +96,8 @@ type statusResponse struct {
 	// players then connect to the hub, which forwards the ports.
 	Hub        string `json:"hub,omitempty"`
 	TunnelAddr string `json:"tunnelAddress,omitempty"`
+	// Proton is the GE-Proton release the unit starts (Proton games only).
+	Proton string `json:"proton,omitempty"`
 }
 
 func handleStatus(w http.ResponseWriter, r *http.Request, g *Game) {
@@ -105,6 +111,9 @@ func handleStatus(w http.ResponseWriter, r *http.Request, g *Game) {
 		Ports:      g.currentPorts(),
 		TCPPorts:   g.currentTCPPorts(),
 		Job:        jobs.snapshot(g.ID),
+	}
+	if g.Platform == Proton {
+		resp.Proton = g.protonVersionOf()
 	}
 	resp.Command = []string{"systemctl", "is-active", g.unit()}
 	if resp.Service == "unknown" {

@@ -108,11 +108,11 @@ func TestExtractTarGzRejectsTraversal(t *testing.T) {
 
 func TestUnitIsSandboxed(t *testing.T) {
 	g := enshrouded(t)
-	unit := renderUnit(g)
+	unit := renderUnit(g, protonPinned)
 	for _, want := range []string{
 		"User=steam-enshrouded", "ProtectSystem=strict", "ReadWritePaths=/var/lib/godeb-play-games/enshrouded",
 		"NoNewPrivileges=yes", "CapabilityBoundingSet=", "KillSignal=SIGINT",
-		"ExecStart=/var/lib/godeb-play-games/proton-ge/" + protonVersion + "/proton run /var/lib/godeb-play-games/enshrouded/server/enshrouded_server.exe",
+		"ExecStart=/var/lib/godeb-play-games/proton-ge/" + protonPinned + "/proton run /var/lib/godeb-play-games/enshrouded/server/enshrouded_server.exe",
 		"Environment=STEAM_COMPAT_DATA_PATH=/var/lib/godeb-play-games/enshrouded/proton",
 		"Environment=STEAM_COMPAT_CLIENT_INSTALL_PATH=/var/lib/godeb-play-games/enshrouded/steamcmd",
 		"Environment=PROTONFIXES_DISABLE=1",
@@ -129,7 +129,7 @@ func TestUnitIsSandboxed(t *testing.T) {
 
 func TestWineUnit(t *testing.T) {
 	g := &Game{ID: "testwine", Name: "Test", AppID: "1", Platform: Windows, Executable: "srv.exe", StopSignal: "SIGINT", Ports: func(map[string]any) []int { return nil }}
-	unit := renderUnit(g)
+	unit := renderUnit(g, protonPinned)
 	for _, want := range []string{
 		"ExecStart=/usr/bin/wine /var/lib/godeb-play-games/testwine/server/srv.exe",
 		"Environment=WINEPREFIX=/var/lib/godeb-play-games/testwine/wine",
@@ -235,7 +235,7 @@ func TestSteamArgs(t *testing.T) {
 	if strings.Contains(strings.Join(steamArgs(linux), " "), "ForcePlatformType") {
 		t.Fatal("Linux servers must not force the Windows platform")
 	}
-	if strings.Contains(renderUnit(linux), "wine") {
+	if strings.Contains(renderUnit(linux, protonPinned), "wine") {
 		t.Fatal("Linux servers must not start under Wine")
 	}
 }

@@ -789,7 +789,6 @@
     "description": "Spielserver installieren, aktualisieren und einstellen.",
     "installHint": "Installiert SteamCMD{{wine}}, lädt den Server (ca. {{size}} GB), legt Konfiguration und Dienst an und öffnet die UDP-Ports. Dauert je nach Leitung 5–20 Minuten. Der Server braucht etwa {{memory}} GB RAM.",
     "wine": " und Wine",
-    "proton": " und GE-Proton (ca. 0,6 GB)",
     "account": "Konto und Dienst",
     "noGames": "Keine Spiele registriert.",
     "games": "Spiele",
@@ -810,10 +809,31 @@
       "install": "Installation",
       "update": "Update",
       "backup": "Backup",
-      "restore": "Wiederherstellung"
+      "restore": "Wiederherstellung",
+      "proton": "GE-Proton"
     },
     "note": {
       "satisfactory": "Der erste Spieler, der sich verbindet, übernimmt den Server und setzt das Admin-Passwort. Das direkt nach der Installation erledigen (über den Tunnel oder im Heimnetz), bevor der Hub die Ports ins Internet weiterleitet."
+    },
+    "protonInstall": " und GE-Proton (ca. 0,6 GB)",
+    "proton": {
+      "title": "GE-Proton",
+      "current": "Dieses Spiel läuft mit {{version}}.",
+      "check": "Nach Updates suchen",
+      "newer": "Neuere Version auf GitHub: {{version}} ({{date}}).",
+      "upToDate": "Keine neuere Version (geprüft {{date}}).",
+      "install": "Laden und verwenden",
+      "use": "Verwenden",
+      "delete": "Löschen",
+      "all": "Alle Versionen auf GitHub",
+      "pinned": "geprüft von GoDeb Play",
+      "unpinned": "aus GitHub geladen",
+      "usedBy": "benutzt von {{games}}",
+      "unused": "ungenutzt",
+      "confirmDownload": "{{version}} von GitHub laden und für dieses Spiel verwenden? Geprüft wird nur gegen die Prüfsumme desselben Releases, nicht gegen eine von GoDeb Play. Der Server stoppt kurz, das Savegame wird vorher gesichert.",
+      "confirmUse": "Dieses Spiel auf {{version}} umstellen? Der Server stoppt kurz, das Savegame wird vorher gesichert.",
+      "confirmDelete": "{{version}} löschen (etwa 1,5 GB)? Später lässt es sich wieder laden.",
+      "hint": "GoDeb Play bringt {{pinned}} mit fest hinterlegter Prüfsumme mit. Neuere Versionen kommen von GitHub und brauchen Passwort und 2FA-Code. Klappt eine Version nicht, stellst du einfach zurück; das Savegame-Backup vom Wechsel liegt bei den Savegames."
     }
   },
   "valheim": {

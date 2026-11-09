@@ -102,9 +102,10 @@ func stepUpFor(method, raw string) stepUpLevel {
 		return stepUpFresh
 	}
 	// Game servers: install and update download and run code from Steam
-	// and install packages; a restore overwrites the world.
+	// and install packages; a restore overwrites the world; /proton
+	// downloads a GE-Proton release that GoDeb Play did not pin.
 	if strings.HasPrefix(p, "/api/plugins/steam/games/") &&
-		(strings.HasSuffix(p, "/install") || strings.HasSuffix(p, "/update") || strings.HasSuffix(p, "/restore")) {
+		(strings.HasSuffix(p, "/install") || strings.HasSuffix(p, "/update") || strings.HasSuffix(p, "/restore") || strings.HasSuffix(p, "/proton")) {
 		return stepUpFresh
 	}
 	for _, prefix := range criticalPrefixes {

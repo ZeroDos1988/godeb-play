@@ -4,7 +4,12 @@ import (
 	"archive/tar"
 	"bytes"
 	"compress/gzip"
-	"crypto/sha256"
+	"context"
+	"crypto/sha512"
+	"encoding/hex"
+	"fmt"
+	"net/http"
+	"net/http/httptest"
 	"os"
 	"path/filepath"
 	"strings"
@@ -102,13 +107,158 @@ func TestLinkInside(t *testing.T) {
 	}
 }
 
-func TestChecksumMismatchIsRejected(t *testing.T) {
-	sum := sha256.Sum256([]byte("tampered"))
-	if err := checkSHA256(sum[:], protonSHA256); err == nil || !strings.Contains(err.Error(), "Prüfsumme") {
+func testJob() *jobHandle { return &jobHandle{r: &jobRunner{job: &Job{}}} }
+
+// fakeGitHub serves one release archive and its sha512sum like GitHub does.
+func fakeGitHub(t *testing.T, version, asset string, archive []byte, sum string) {
+	t.Helper()
+	mux := http.NewServeMux()
+	mux.HandleFunc("/"+version+"/"+asset+".tar.gz", func(w http.ResponseWriter, _ *http.Request) { w.Write(archive) })
+	mux.HandleFunc("/"+version+"/"+asset+".sha512sum", func(w http.ResponseWriter, _ *http.Request) {
+		fmt.Fprintf(w, "%s  %s.tar.gz\n", sum, asset)
+	})
+	srv := httptest.NewServer(mux)
+	t.Cleanup(srv.Close)
+	old := protonDownloadBase
+	protonDownloadBase = srv.URL + "/"
+	t.Cleanup(func() { protonDownloadBase = old })
+}
+
+func releaseArchive(t *testing.T, asset string) []byte {
+	return protonTar(t, []tarEntry{
+		{name: asset + "/", typ: tar.TypeDir, mode: 0o755},
+		{name: asset + "/proton", typ: tar.TypeReg, mode: 0o755, body: "#!/usr/bin/env python3"},
+	})
+}
+
+func TestEnsureProtonVerifiesReleaseChecksum(t *testing.T) {
+	t.Setenv("GODEB_STEAM_ROOT", t.TempDir())
+	const v = "GE-Proton99-1"
+	archive := releaseArchive(t, v+"-x86_64")
+	sum := sha512.Sum512(archive)
+	fakeGitHub(t, v, v+"-x86_64", archive, hex.EncodeToString(sum[:]))
+	if err := ensureProton(context.Background(), testJob(), v); err != nil {
+		t.Fatal(err)
+	}
+	if !protonReady(v) {
+		t.Fatal("not unpacked")
+	}
+	if got := installedProtons(); len(got) != 1 || got[0] != v {
+		t.Fatalf("installed = %v", got)
+	}
+	if entries, _ := os.ReadDir(protonsDir()); len(entries) != 1 {
+		t.Fatalf("leftovers: %v", entries)
+	}
+}
+
+func TestEnsureProtonRejectsTamperedArchive(t *testing.T) {
+	t.Setenv("GODEB_STEAM_ROOT", t.TempDir())
+	const v = "GE-Proton99-2"
+	archive := releaseArchive(t, v+"-x86_64")
+	other := sha512.Sum512([]byte("something else"))
+	fakeGitHub(t, v, v+"-x86_64", archive, hex.EncodeToString(other[:]))
+	err := ensureProton(context.Background(), testJob(), v)
+	if err == nil || !strings.Contains(err.Error(), "Prüfsumme") {
 		t.Fatalf("err = %v", err)
 	}
-	if len(protonSHA256) != 64 || strings.Trim(protonSHA256, "0123456789abcdef") != "" {
-		t.Fatal("pinned hash is not a SHA-256")
+	if protonReady(v) {
+		t.Fatal("tampered archive unpacked")
+	}
+	if entries, _ := os.ReadDir(protonsDir()); len(entries) != 0 {
+		t.Fatalf("leftovers: %v", entries)
+	}
+}
+
+func TestEnsureProtonFallsBackToOldAssetName(t *testing.T) {
+	t.Setenv("GODEB_STEAM_ROOT", t.TempDir())
+	const v = "GE-Proton9-27"
+	archive := releaseArchive(t, v)
+	sum := sha512.Sum512(archive)
+	fakeGitHub(t, v, v, archive, hex.EncodeToString(sum[:]))
+	if err := ensureProton(context.Background(), testJob(), v); err != nil {
+		t.Fatal(err)
+	}
+}
+
+func TestEnsureProtonRejectsBadVersion(t *testing.T) {
+	for _, v := range []string{"../etc", "GE-Proton11-12/../../x", "Proton-9", "GE-Proton11-12 ", ""} {
+		if err := ensureProton(context.Background(), testJob(), v); err == nil {
+			t.Errorf("accepted %q", v)
+		}
+	}
+}
+
+func TestPinnedHashIsSHA512(t *testing.T) {
+	if !sha512Hex.MatchString(protonPinnedSHA512) || !protonTag.MatchString(protonPinned) {
+		t.Fatal("pinned release is malformed")
+	}
+	sum := sha512.Sum512([]byte("tampered"))
+	if checkSHA512(sum[:], protonPinnedSHA512) == nil {
+		t.Fatal("mismatch accepted")
+	}
+}
+
+func TestParseSHA512Sum(t *testing.T) {
+	h := strings.Repeat("ab", 64)
+	if got, err := parseSHA512Sum(strings.NewReader(h+"  GE-Proton11-12-x86_64.tar.gz\n"), "GE-Proton11-12-x86_64.tar.gz"); err != nil || got != h {
+		t.Fatalf("%q %v", got, err)
+	}
+	if _, err := parseSHA512Sum(strings.NewReader(h+"  other.tar.gz\n"), "GE-Proton11-12-x86_64.tar.gz"); err == nil {
+		t.Fatal("hash for another file accepted")
+	}
+	if _, err := parseSHA512Sum(strings.NewReader("abc  GE-Proton11-12-x86_64.tar.gz\n"), "GE-Proton11-12-x86_64.tar.gz"); err == nil {
+		t.Fatal("short hash accepted")
+	}
+}
+
+func TestParseReleases(t *testing.T) {
+	raw := `[
+	 {"tag_name":"GE-Proton11-9","published_at":"2026-09-01T00:00:00Z","assets":[{"name":"GE-Proton11-9-x86_64.tar.gz"}]},
+	 {"tag_name":"GE-Proton11-12","published_at":"2026-11-03T00:00:00Z","assets":[{"name":"GE-Proton11-12-x86_64.tar.gz"},{"name":"GE-Proton11-12-aarch64.tar.gz"}]},
+	 {"tag_name":"GE-Proton11-13","prerelease":true,"assets":[{"name":"GE-Proton11-13-x86_64.tar.gz"}]},
+	 {"tag_name":"GE-Proton11-10","assets":[{"name":"GE-Proton11-10-aarch64.tar.gz"}]},
+	 {"tag_name":"../evil","assets":[{"name":"../evil.tar.gz"}]}
+	]`
+	list, err := parseReleases(strings.NewReader(raw))
+	if err != nil {
+		t.Fatal(err)
+	}
+	if len(list) != 2 || list[0].Version != "GE-Proton11-12" || !list[0].Pinned || list[1].Version != "GE-Proton11-9" {
+		t.Fatalf("list = %+v", list)
+	}
+}
+
+func TestUnitNamesProtonVersion(t *testing.T) {
+	g := enshrouded(t)
+	if got := unitProtonVersion(renderUnit(g, "GE-Proton11-9")); got != "GE-Proton11-9" {
+		t.Fatalf("version = %q", got)
+	}
+	if got := unitProtonVersion("ExecStart=/usr/bin/wine x.exe"); got != "" {
+		t.Fatalf("version = %q", got)
+	}
+}
+
+func TestDeleteProtonRefusesUsedVersion(t *testing.T) {
+	t.Setenv("GODEB_STEAM_ROOT", t.TempDir())
+	g := enshrouded(t)
+	for _, v := range []string{"GE-Proton11-9", "GE-Proton11-12"} {
+		os.MkdirAll(protonDir(v), 0o755)
+		os.WriteFile(filepath.Join(protonDir(v), "proton"), []byte("x"), 0o755)
+	}
+	if err := os.WriteFile(g.unitPath(), []byte(renderUnit(g, "GE-Proton11-9")), 0o644); err != nil {
+		t.Fatal(err)
+	}
+	if err := deleteProton("GE-Proton11-9"); err == nil || !strings.Contains(err.Error(), "enshrouded") {
+		t.Fatalf("err = %v", err)
+	}
+	if err := deleteProton("GE-Proton11-12"); err != nil {
+		t.Fatal(err)
+	}
+	if protonReady("GE-Proton11-12") || !protonReady("GE-Proton11-9") {
+		t.Fatal("wrong version removed")
+	}
+	if err := deleteProton("../backups"); err == nil {
+		t.Fatal("traversal accepted")
 	}
 }
 

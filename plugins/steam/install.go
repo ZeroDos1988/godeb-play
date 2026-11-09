@@ -25,7 +25,7 @@ const steamcmdURL = "https://steamcdn-a.akamaihd.net/client/installer/steamcmd_l
 
 // renderUnit is the systemd unit of a game server. It runs as the game's own
 // account and may only write below the game's base directory.
-func renderUnit(g *Game) string {
+func renderUnit(g *Game, proton string) string {
 	base := g.baseDir()
 	lines := []string{
 		"# Managed by GoDeb Play (game servers). Changes are overwritten on update.",
@@ -67,7 +67,7 @@ func renderUnit(g *Game) string {
 		for _, kv := range g.protonEnv() {
 			lines = append(lines, "Environment="+kv)
 		}
-		exec = filepath.Join(protonDir(), "proton") + " run " + exec
+		exec = filepath.Join(protonDir(proton), "proton") + " run " + exec
 	}
 	if len(g.Args) > 0 {
 		exec += " " + strings.Join(g.Args, " ")
@@ -163,8 +163,10 @@ func install(ctx context.Context, g *Game, j *jobHandle) error {
 		return err
 	}
 	if g.Platform == Proton {
-		j.step(protonVersion)
-		if err := ensureProton(ctx, j); err != nil {
+		// A reinstall keeps the version the unit already uses.
+		version := g.protonVersionOf()
+		j.step(version)
+		if err := ensureProton(ctx, j, version); err != nil {
 			return err
 		}
 	}
@@ -247,16 +249,17 @@ func update(ctx context.Context, g *Game, j *jobHandle) error {
 		return err
 	}
 	if g.Platform == Proton {
-		// A new pinned release arrives with an update of GoDeb Play; a
-		// game installed under Wine before gets Proton's packages and prefix.
-		j.step(protonVersion)
+		// The game keeps its version (the panel switches it); a game
+		// installed under Wine before gets Proton's packages and prefix.
+		version := g.protonVersionOf()
+		j.step(version)
 		if err := ensurePackages(ctx, g, j); err != nil {
 			return err
 		}
 		if err := ensureSubdirs(r, uid, gid, compatSub); err != nil {
 			return err
 		}
-		if err := ensureProton(ctx, j); err != nil {
+		if err := ensureProton(ctx, j, version); err != nil {
 			return err
 		}
 	}
@@ -471,8 +474,13 @@ func writeConfig(g *Game, raw []byte, uid, gid int) error {
 	return writeAtomic(r, g.configName(), raw, 0o640, uid, gid)
 }
 
+// writeUnit rewrites the unit and keeps the game's GE-Proton version.
 func writeUnit(ctx context.Context, g *Game) error {
-	if err := os.WriteFile(g.unitPath(), []byte(renderUnit(g)), 0o644); err != nil {
+	return writeUnitVersion(ctx, g, g.protonVersionOf())
+}
+
+func writeUnitVersion(ctx context.Context, g *Game, proton string) error {
+	if err := os.WriteFile(g.unitPath(), []byte(renderUnit(g, proton)), 0o644); err != nil {
 		return err
 	}
 	if res := core.RunAdmin(ctx, "systemctl", "daemon-reload"); res.Err != nil {

@@ -37,7 +37,7 @@ func TestValheimSettingsRoundTrip(t *testing.T) {
 	if info, _ := os.Stat(g.settingsPath()); info.Mode().Perm() != 0o600 {
 		t.Errorf("settings mode %v", info.Mode())
 	}
-	unit := renderUnit(g)
+	unit := renderUnit(g, protonPinned)
 	for _, want := range []string{"EnvironmentFile=" + g.settingsPath(), "-password ${VALHEIM_PASSWORD}", "Environment=SteamAppId=892970", "/server/linux64"} {
 		if !strings.Contains(unit, want) {
 			t.Errorf("unit misses %q", want)
@@ -76,7 +76,7 @@ func TestSatisfactoryPortsAndFirewall(t *testing.T) {
 	if args != "allow in on wg0 to any port 8888 proto tcp comment GoDeb Play Satisfactory" {
 		t.Fatal(args)
 	}
-	if strings.Contains(renderUnit(g), "EnvironmentFile") {
+	if strings.Contains(renderUnit(g, protonPinned), "EnvironmentFile") {
 		t.Fatal("satisfactory has no settings file")
 	}
 }

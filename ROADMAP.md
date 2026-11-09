@@ -29,6 +29,7 @@ Konzept (aus dem GoDeb-Fahrplan, 03.11.): Spielserver gehören nicht in GoDeb. G
 - [x] Spieler und Status per Steam-Query (A2S), Messwerte für den Hub; Hinweis auf die nötige Portweiterleitung im Hub.
 - [x] Installieren, Update und Wiederherstellen mit Passwort und frischem Code; Fuzz-Test für die Enshrouded-Konfiguration.
 - [x] **GE-Proton statt Wine für Enshrouded** (09.11.): festgelegte Version mit geprüfter SHA-256, root-eigen und für alle Spiele gemeinsam, Präfix pro Spiel; Wine aus Debian bleibt als Plattform für andere Spiele. Entpacken des echten Archivs geprüft (identisch zu `tar`).
+- [x] **Verwaltung für GE-Proton** (09.11.): neue Versionen auf GitHub anzeigen, mit Passwort und 2FA laden (gegen die `.sha512sum` des Releases geprüft), pro Spiel umstellen (mit Savegame-Backup), ungenutzte löschen.
 - [ ] **(Nutzer) GE-Proton unter Debian 13:** Startet `enshrouded_server.exe` mit `proton run` ohne X-Server und mit den Paketen `python3`, `libfreetype6`, `libgnutls30t64`? Falls ein X-Server nötig ist: `xvfb-run` als Option im Unit-Template (Paket `xvfb`). Fehlende Bibliotheken stehen im Server-Log.
 - [ ] **(Nutzer) Enshrouded-Ports:** Neuere Serverversionen kennen nur `queryPort`. GoDeb Play öffnet zusätzlich `queryPort-1`, solange kein `gamePort` gesetzt ist; nach dem Test ggf. entfernen.
 - [ ] **(Nutzer) Backup und Wiederherstellen** einmal mit einem echten Savegame ausprobieren.

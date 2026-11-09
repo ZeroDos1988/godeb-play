@@ -13,14 +13,14 @@
   "dependencies": {
     "@fontsource/ibm-plex-mono": "^5.2.5",
     "@fontsource/ibm-plex-sans": "^5.2.5",
-    "i18next": "^26.4.5",
+    "i18next": "^26.7.2",
     "react": "^19.0.0",
     "react-dom": "^19.0.0",
-    "react-i18next": "^17.0.16"
+    "react-i18next": "^17.1.13"
   },
   "devDependencies": {
-    "@playwright/test": "^1.55.0",
-    "@tailwindcss/vite": "^4.1.0",
+    "@playwright/test": "^1.65.0",
+    "@tailwindcss/vite": "^4.3.4",
     "@types/node": "^22.15.0",
     "@types/react": "^19.0.0",
     "@types/react-dom": "^19.0.0",

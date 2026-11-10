@@ -36,7 +36,7 @@ GoDeb Play hat eigene Namen, damit es nie mit GoDeb kollidiert: Programm `godeb-
 
 ## Installation (zum Testen)
 
-Aus dem APT-Repo (Debian 13, amd64 und arm64; verfügbar ab dem ersten Release; Updates dann über das Plugin „Updates“ oder `apt upgrade`):
+Aus dem APT-Repo (Debian 13, amd64 und arm64; Updates dann über das Plugin „Updates“ oder `apt upgrade`):
 
 ```sh
 sudo wget -O /usr/share/keyrings/godeb-play-archive-keyring.asc https://zerodos1988.github.io/godeb-play/godeb-play-archive-keyring.asc

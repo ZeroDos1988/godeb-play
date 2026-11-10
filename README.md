@@ -11,12 +11,13 @@ Spieler --> VPS (GoDeb-Hub, öffentliche IP) --DNAT/SNAT--> WireGuard --> GoDeb 
                                                                           + Spielserver
 ```
 
-> **Stand (07.11.2026):** Vorabversion, noch nicht auf echter Hardware getestet. Einrichtung, Login mit 2FA, Agent, Beitritt zum Hub und Enshrouded (SteamCMD, unter GE-Proton) mit Savegame-Backups sind umgesetzt. Siehe [ROADMAP.md](ROADMAP.md).
+> **Stand (10.11.2026):** Vorabversion, noch nicht auf echter Hardware getestet. Einrichtung, Login mit 2FA, Agent, Beitritt zum Hub, die Spiele Enshrouded (unter GE-Proton), Valheim und Satisfactory, die Verwaltung der GE-Proton-Versionen und Savegame-Backups sind umgesetzt. Siehe [ROADMAP.md](ROADMAP.md).
 
 ## Spielserver
 
-- **Ein Klick zum Server:** SteamCMD, Serverdateien, GE-Proton (oder Wine) für Windows-Server, Vorgabe-Konfiguration mit Formular, systemd-Unit, Firewall. Enshrouded ist das erste Spiel; weitere brauchen nur eine Beschreibung im Code.
+- **Ein Klick zum Server:** SteamCMD, Serverdateien, GE-Proton (oder Wine) für Windows-Server, Vorgabe-Konfiguration mit Formular, systemd-Unit, Firewall. Enshrouded, Valheim und Satisfactory sind dabei; weitere brauchen nur eine Beschreibung im Code.
 - **Jedes Spiel eigenes Konto und Sandbox**, nie root. Der root-Agent greift auf Spielverzeichnisse nur über `os.Root` zu, damit ein übernommener Spielserver ihn nicht per Symlink nach draußen lenken kann.
+- **GE-Proton verwalten:** neue Versionen anzeigen, geprüft laden (SHA-512 des Releases), pro Spiel umstellen, ungenutzte löschen.
 - **Savegames gesichert** vor jedem Update, auf Knopfdruck und vor jeder Wiederherstellung; Wiederherstellen mit einem Klick.
 - **Spielerzahlen** per Steam-Query, sichtbar hier und auf dem GoDeb-Hub.
 - **Ports nur im Tunnel:** Öffentlich werden sie über die Portweiterleitung des Hubs in GoDeb; die Seite nennt genau, was dort einzutragen ist.
@@ -35,7 +36,7 @@ GoDeb Play hat eigene Namen, damit es nie mit GoDeb kollidiert: Programm `godeb-
 
 ## Installation (zum Testen)
 
-Aus dem APT-Repo (Debian 13, amd64 und arm64; Updates dann über das Plugin „Updates“ oder `apt upgrade`):
+Aus dem APT-Repo (Debian 13, amd64 und arm64; verfügbar ab dem ersten Release; Updates dann über das Plugin „Updates“ oder `apt upgrade`):
 
 ```sh
 sudo wget -O /usr/share/keyrings/godeb-play-archive-keyring.asc https://zerodos1988.github.io/godeb-play/godeb-play-archive-keyring.asc
